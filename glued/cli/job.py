@@ -1,6 +1,8 @@
 import os
 import boto3
 from argparse import Namespace
+from jinja2 import Template
+from glued.environment import IAM_ROLE
 from glued.src.project import GluedProject
 from glued.src.job import GluedJob
 from glued.src.templating import TemplateController
@@ -13,12 +15,14 @@ def new(cmd: Namespace) -> None:
     # TODO: validate name
     job_name = cmd.name
 
-    glued_job = GluedJob(project.root, job_name)
+    job = GluedJob(project.root, job_name)
 
     config_template = template_controller.get_template_content('job_config.template.yml')
+    config_template = Template(config_template).render(iam_role=IAM_ROLE, script_location=job.s3_script_path)
+
     script_template = template_controller.get_template_content('main.template.py')
 
-    glued_job.create(config_template, script_template)
+    job.create(config_template, script_template)
 
 
 def sync(cmd: Namespace) -> Namespace:

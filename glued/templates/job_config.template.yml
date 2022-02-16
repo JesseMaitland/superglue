@@ -1,0 +1,44 @@
+job:
+  Name: string
+  Description: string
+  LogUri: string
+  Role: {{iam_role}}
+  ExecutionProperty:
+    MaxConcurrentRuns: 1
+  Command:
+    Name: glueetl
+    ScriptLocation: {{script_location}}
+    PythonVersion: 3
+  MaxRetries: 123,
+  AllocatedCapacity: 123,
+  Timeout: 123,
+  MaxCapacity: 123.0,
+  SecurityConfiguration: string,
+  GlueVersion: 3,
+  NumberOfWorkers: 4,
+  WorkerType: Standard
+
+# place your script arguments here as a dict of string values
+# DefaultArguments:
+#    string: string
+
+# place your non overridable script arguments here as a dict of string values
+# NonOverridableArguments:
+#   string: string
+#
+
+# place your aws glue connection names as a list of strings here
+# Connections:
+#   Connections:
+#     - list of
+#     - connections
+
+
+# any useful tag names can be placed here
+# Tags:
+#   string: string
+
+# notifications can be configured here
+#    NotificationProperty:
+#        NotifyDelayAfter: 123
+#

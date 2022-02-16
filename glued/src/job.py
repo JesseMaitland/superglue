@@ -25,6 +25,10 @@ class GluedJob:
         self.s3_client = s3_client
 
     @property
+    def s3_script_path(self) -> str:
+        return f"s3://{self.bucket}/glue_jobs/{self.job_name}/main.py"
+
+    @property
     def job_path(self) -> Path:
         return self.parent_dir / self.job_name
 
