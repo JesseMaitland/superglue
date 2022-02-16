@@ -1,4 +1,4 @@
-job:
+job_config:
   Name: string
   Description: string
   LogUri: string
@@ -19,8 +19,10 @@ job:
   WorkerType: Standard
 
 # place your script arguments here as a dict of string values
-# DefaultArguments:
-#    string: string
+  DefaultArguments:
+    --class: GlueApp
+    --enable-glue-datacatalog: True
+    --job-bookmark-option: job-bookmark-enable
 
 # place your non overridable script arguments here as a dict of string values
 # NonOverridableArguments:

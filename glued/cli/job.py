@@ -26,7 +26,6 @@ def new(cmd: Namespace) -> None:
 
 
 def sync(cmd: Namespace) -> Namespace:
-    print(os.environ)
     project = GluedProject()
     bucket = os.getenv('S3_BUCKET')
     glue_client = boto3.client('glue')
