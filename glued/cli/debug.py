@@ -7,6 +7,7 @@ from pathlib import Path
 def run(cmd: Namespace) -> None:
     project = GluedProject()
     job = GluedJob(project.root, 'foo')
-
-    job.sync_job()
-
+    job.create_version()
+    remote_version = job.fetch_s3_version()
+    print(remote_version)
+    print(remote_version == job.version)

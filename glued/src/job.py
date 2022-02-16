@@ -5,6 +5,7 @@ from hashlib import md5
 from typing import List, Tuple, Dict
 from multiprocessing import Pool, cpu_count
 from botocore.client import BaseClient
+from io import BytesIO
 from glued.environment import DEFAULT_S3_BUCKET
 
 
@@ -28,42 +29,12 @@ class GluedJob:
         return self.parent_dir / self.job_name
 
     @property
-    def extra_py_files_path(self) -> Path:
+    def py_files_path(self) -> Path:
         return self.job_path / 'py'
 
     @property
-    def extra_jars_path(self) -> Path:
+    def jars_path(self) -> Path:
         return self.job_path / 'jars'
-
-    @property
-    def extra_jars_s3_path(self) -> str:
-        return f"{self.bucket}/jars/"
-
-    @property
-    def extra_py_files_s3_path(self) -> str:
-        return f"{self.bucket}/py_files/"
-
-    @property
-    def py_files(self) -> List[Path]:
-        try:
-            return [path for path in self.extra_py_files_path.glob('*.py')]
-        except FileNotFoundError:
-            return []
-
-    @property
-    def jar_files(self) -> List[Path]:
-        try:
-            return [path for path in self.extra_jars_path.glob('*.jar')]
-        except FileNotFoundError:
-            return []
-
-    @property
-    def extra_jar_keys(self) -> List[str]:
-        return [f"/jars/{jar}" for jar in self.jar_files]
-
-    @property
-    def extra_py_file_keys(self) -> List[str]:
-        return [f"/py_files/{py_file}" for py_file in self.py_files]
 
     @property
     def version_file(self) -> Path:
@@ -71,7 +42,11 @@ class GluedJob:
 
     @property
     def version(self) -> Dict:
-        return json.load(self.version_file)
+        return json.load(self.version_file.open())
+
+    @property
+    def hashable_files(self) -> List[Path]:
+        return [path for path in self.list_job_files() if path.name != '.version']
 
     def _upload_object_to_s3(self, path: Path) -> None:
 
@@ -84,7 +59,7 @@ class GluedJob:
     def _get_key(self, path: Path) -> str:
         return path.relative_to(self.parent_dir).as_posix()
 
-    def _get_digest(self, path: Path) -> Tuple[str, str]:
+    def _hash_file(self, path: Path) -> Tuple[str, str]:
         key = self._get_key(path)
 
         md5_hash = md5()
@@ -93,41 +68,55 @@ class GluedJob:
                 md5_hash.update(chunk)
             return key, md5_hash.hexdigest()
 
-    def _save_version(self, data: Dict) -> None:
-        json.dump(data, self.version_file.open(mode='w'), indent=4)
+    def _save_version(self, version_hashes: Dict) -> None:
+        json.dump(version_hashes, self.version_file.open(mode='w'), indent=4)
+
+    def _get_version_hashes(self) -> Dict[str, str]:
+        version_hashes = {}
+        for path in self.hashable_files:
+            key, digest = self._hash_file(path)
+            version_hashes[key] = digest
+        return version_hashes
 
     def create(self, config_template: str, script_template: str) -> None:
-        self.job_path.mkdir(exist_ok=True)
-        self.extra_py_files_path.mkdir(exist_ok=True)
-        self.extra_jars_path.mkdir(exist_ok=True)
 
-        config_path = self.job_path / 'config.yml'
-        config_path.touch(exist_ok=True)
-        config_path.write_text(config_template)
+        if not self.job_path.exists():
 
-        script_path = self.job_path / 'main.py'
-        script_path.touch(exist_ok=True)
-        script_path.write_text(script_template)
+            self.job_path.mkdir(exist_ok=True)
+            self.py_files_path.mkdir(exist_ok=True)
+            self.jars_path.mkdir(exist_ok=True)
 
-        self.version_file.touch(exist_ok=True)
+            config_path = self.job_path / 'config.yml'
+            config_path.touch(exist_ok=True)
+            config_path.write_text(config_template)
 
-        files_to_digest = [path for path in self.list_files() if path.name != '.version']
+            script_path = self.job_path / 'main.py'
+            script_path.touch(exist_ok=True)
+            script_path.write_text(script_template)
 
-        version_hashes = {}
-        for path in files_to_digest:
-            key, digest = self._get_digest(path)
-            version_hashes[key] = digest
+            self.version_file.touch(exist_ok=True)
+            version_hashes = self._get_version_hashes()
+            self._save_version(version_hashes)
 
-        print(version_hashes)
-        self._save_version(version_hashes)
+        else:
+            print(f'The job {self.job_path.name} already exists.')
 
     def sync_job(self) -> None:
         with Pool(cpu_count()) as pool:
-            files = self.list_files()
+            files = self.list_job_files()
             pool.map(self._upload_object_to_s3, files)
 
-    def list_files(self) -> List[Path]:
+    def list_job_files(self) -> List[Path]:
         return [path for path in self.job_path.glob('**/*.*') if path.is_file()]
 
     def create_version(self) -> None:
-        pass
+        version_hashes = self._get_version_hashes()
+        self._save_version(version_hashes)
+
+    def fetch_s3_version(self) -> Dict[str, str]:
+        s3_client = boto3.client('s3')
+        key = self._get_key(self.version_file)
+        with BytesIO() as buffer:
+            s3_client.download_fileobj(self.bucket, f"glue_jobs/{key}", buffer)
+            buffer.seek(0)
+            return json.load(buffer)
