@@ -18,6 +18,9 @@ def parse_args():
     project_init_command = project_command_subparser.add_parser('init')
     project_init_command.set_defaults(func=project.init)
 
+    project_sync_command = project_command_subparser.add_parser('sync')
+    project_sync_command.set_defaults(func=project.sync)
+
     # job commands
     job_command = sub_parser.add_parser('job')
     job_command_subparser = job_command.add_subparsers()
@@ -27,9 +30,15 @@ def parse_args():
     job_new_command.set_defaults(func=job.new)
     job_new_command.add_argument('name')
 
-    job_sync_command = job_command_subparser.add_parser('sync')
-    job_sync_command.set_defaults(func=job.sync)
+    # job sync command
+    job_sync_command = job_command_subparser.add_parser('deploy')
+    job_sync_command.set_defaults(func=job.deploy)
     job_sync_command.add_argument('name')
+
+    # job delete command
+    job_delete_command = job_command_subparser.add_parser('delete')
+    job_delete_command.set_defaults(func=job.delete)
+    job_delete_command.add_argument('name')
 
     # debug
     debug_command = sub_parser.add_parser('debug')

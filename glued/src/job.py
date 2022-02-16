@@ -189,11 +189,34 @@ class GluedJob:
             job_name = params.pop('Name')
 
             # request a job update, if it fails a client exception is raised.
-            glue_response = glue_client.update_job(JobName=job_name, JobUpdate=params)
-            request_type = 'update'
+            _ = glue_client.update_job(JobName=job_name, JobUpdate=params)
 
         else:  # otherwise create the job for the first time
             # request create job, if it fails a client exception is raised.
-            glue_response = glue_client.create_job(**self.config)
-            request_type = 'create'
+            _ = glue_client.create_job(**self.config)
 
+    def delete_job_files(self) -> None:
+        s3_client = boto3.client('s3')
+        object_paths = s3_client.list_objects_v2(Bucket=self.bucket, Prefix=f'glue_jobs/{self.job_name}')
+
+        try:
+            object_paths = [path['Key'] for path in object_paths['Contents']]
+        except KeyError:
+            return
+
+        to_delete = {
+            'Objects': [{'Key': path} for path in object_paths]
+        }
+        _ = s3_client.delete_objects(Bucket=self.bucket, Delete=to_delete)
+
+    def delete_glue_job(self) -> None:
+        glue_client = boto3.client('glue')
+        glue_client.delete_job(JobName=self.config['Name'])
+
+    def delete(self) -> None:
+        self.delete_job_files()
+        self.delete_glue_job()
+
+    def deploy(self) -> None:
+        self.sync_job()
+        self.create_or_update_job()

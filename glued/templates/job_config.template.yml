@@ -1,27 +1,27 @@
 job_config:
-  Name: string
-  Description: string
-  LogUri: string
+  Name: name-of-job-here
+  Description: this is the job description
+  # LogUri: string
   Role: {{iam_role}}
   ExecutionProperty:
     MaxConcurrentRuns: 1
   Command:
     Name: glueetl
     ScriptLocation: {{script_location}}
-    PythonVersion: 3
-  MaxRetries: 123,
-  AllocatedCapacity: 123,
-  Timeout: 123,
-  MaxCapacity: 123.0,
-  SecurityConfiguration: string,
-  GlueVersion: 3,
-  NumberOfWorkers: 4,
+    PythonVersion: '3'
+  # MaxRetries: 1
+  # AllocatedCapacity: 123
+  # Timeout: 123
+  # MaxCapacity: 123
+  # SecurityConfiguration: string
+  GlueVersion: '3.0'
+  NumberOfWorkers: 4
   WorkerType: Standard
 
 # place your script arguments here as a dict of string values
   DefaultArguments:
     --class: GlueApp
-    --enable-glue-datacatalog: True
+    --enable-glue-datacatalog: '' # This must be set to an empty string for the boto api to work
     --job-bookmark-option: job-bookmark-enable
 
 # place your non overridable script arguments here as a dict of string values

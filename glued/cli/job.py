@@ -1,8 +1,7 @@
 import os
-import boto3
 from argparse import Namespace
 from jinja2 import Template
-from glued.environment import IAM_ROLE
+from glued.environment import IAM_ROLE, DEFAULT_S3_BUCKET
 from glued.src.project import GluedProject
 from glued.src.job import GluedJob
 from glued.src.templating import TemplateController
@@ -25,16 +24,31 @@ def new(cmd: Namespace) -> None:
     job.create(config_template, script_template)
 
 
-def sync(cmd: Namespace) -> Namespace:
+def deploy(cmd: Namespace) -> Namespace:
     project = GluedProject()
-    bucket = os.getenv('S3_BUCKET')
-    glue_client = boto3.client('glue')
-    s3_client = boto3.client('s3')
+    job = GluedJob(
+        parent_dir=project.root,
+        job_name=cmd.name,
+        bucket=DEFAULT_S3_BUCKET
+        )
 
-    glued_job = GluedJob(parent_dir=project.root,
-                         job_name=cmd.name,
-                         bucket=bucket,
-                         glue_client=None,
-                         s3_client=None)
+    if not job.job_path.exists():
+        print(f"The job {cmd.name} does not exist")
+    else:
+        job.load_config()
+        job.deploy()
 
-    glued_job.sync_job()
+
+def delete(cmd: Namespace) -> Namespace:
+    project = GluedProject()
+    job = GluedJob(
+        parent_dir=project.root,
+        job_name=cmd.name,
+        bucket=DEFAULT_S3_BUCKET
+    )
+
+    if not job.job_path.exists():
+        print(f"The job {cmd.name} does not exist")
+    else:
+        job.load_config()
+        job.delete()
