@@ -1,0 +1,4 @@
+project:
+  folder: glue
+  bucket: bucket-name-here
+  aws_profile: default
