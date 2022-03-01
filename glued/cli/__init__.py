@@ -2,6 +2,7 @@ from argparse import ArgumentParser  # This is the standard library arg parser, 
 from glued.cli import job
 from glued.cli import project
 from glued.cli import debug
+from glued.cli import shared
 
 def parse_args():
 
@@ -43,6 +44,15 @@ def parse_args():
     # debug
     debug_command = sub_parser.add_parser('debug')
     debug_command.set_defaults(func=debug.run)
+
+    # shared commands
+    shared_parser = sub_parser.add_parser('shared')
+    shared_command_subparser = shared_parser.add_subparsers()
+
+    # shared new command
+    shared_new_command = shared_command_subparser.add_parser('new')
+    shared_new_command.add_argument('name')
+    shared_new_command.set_defaults(func=shared.new)
 
     # Parse the arguments passed into the program from the entry point.
     return parser.parse_args()

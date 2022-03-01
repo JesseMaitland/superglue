@@ -14,7 +14,7 @@ def new(cmd: Namespace) -> None:
     # TODO: validate name
     job_name = cmd.name
 
-    job = GluedJob(project.root, job_name)
+    job = GluedJob(project.jobs_root, job_name)
 
     config_template = template_controller.get_template_content('job_config.template.yml')
     config_template = Template(config_template).render(iam_role=IAM_ROLE, script_location=job.s3_script_path)
@@ -27,7 +27,7 @@ def new(cmd: Namespace) -> None:
 def deploy(cmd: Namespace) -> Namespace:
     project = GluedProject()
     job = GluedJob(
-        parent_dir=project.root,
+        parent_dir=project.jobs_root,
         job_name=cmd.name,
         bucket=DEFAULT_S3_BUCKET
         )
@@ -42,7 +42,7 @@ def deploy(cmd: Namespace) -> Namespace:
 def delete(cmd: Namespace) -> Namespace:
     project = GluedProject()
     job = GluedJob(
-        parent_dir=project.root,
+        parent_dir=project.jobs_root,
         job_name=cmd.name,
         bucket=DEFAULT_S3_BUCKET
     )

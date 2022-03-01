@@ -3,6 +3,7 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 glue_jobs
 glued.yml
+shared
 .idea
 # User-specific stuff
 .idea/**/workspace.xml

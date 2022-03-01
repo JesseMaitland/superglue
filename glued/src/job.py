@@ -1,34 +1,31 @@
 import boto3
-import json
 import yaml
 import botocore
-from io import BytesIO
 from pathlib import Path
-from hashlib import md5
-from typing import List, Tuple, Dict
-from multiprocessing import Pool, cpu_count
+from typing import List
 from glued.environment import DEFAULT_S3_BUCKET
+from glued.src.base_file_controller import BaseFileController
 
 
-class GluedJob:
+class GluedJob(BaseFileController):
 
     def __init__(self,
                  parent_dir: Path,
                  job_name: str,
                  bucket: str = DEFAULT_S3_BUCKET) -> None:
+        super().__init__(parent_dir=parent_dir,
+                         dir_name=job_name,
+                         bucket=bucket,
+                         bucket_prefix='glue_jobs')
 
-        self.parent_dir = parent_dir
         self.job_name = job_name
-        self.bucket = bucket
+        self.shared_dir = self.parent_dir / 'shared'
+        self.shared_paths = []
         self.config = {}
 
     @property
-    def s3_job_path(self) -> str:
-        return f"s3://{self.bucket}/glue_jobs"
-
-    @property
     def s3_script_path(self) -> str:
-        return f"{self.s3_job_path}/{self.job_name}/main.py"
+        return f"{self.s3_prefix}/{self.job_name}/main.py"
 
     @property
     def job_path(self) -> Path:
@@ -41,18 +38,6 @@ class GluedJob:
     @property
     def jars_path(self) -> Path:
         return self.job_path / 'jars'
-
-    @property
-    def version_file(self) -> Path:
-        return self.job_path / '.version'
-
-    @property
-    def version(self) -> Dict:
-        return json.load(self.version_file.open())
-
-    @property
-    def hashable_files(self) -> List[Path]:
-        return [path for path in self.list_job_files() if path.name != '.version']
 
     @property
     def config_path(self) -> Path:
@@ -76,39 +61,13 @@ class GluedJob:
         except FileNotFoundError:
             return []
 
-    def _upload_object_to_s3(self, path: Path) -> None:
-
-        s3_client = boto3.client('s3')
-
-        with path.open(mode='rb') as data:
-            key = self._get_key(path)
-            s3_client.upload_fileobj(data, self.bucket, f"glue_jobs/{key}")
-
-    def _get_key(self, path: Path) -> str:
-        return path.relative_to(self.parent_dir).as_posix()
-
-    def _hash_file(self, path: Path) -> Tuple[str, str]:
-        key = self._get_key(path)
-
-        md5_hash = md5()
-        with path.open('rb') as data:
-            for chunk in iter(lambda: data.read(4096), b""):
-                md5_hash.update(chunk)
-            return key, md5_hash.hexdigest()
-
-    def _save_version(self, version_hashes: Dict) -> None:
-        json.dump(version_hashes, self.version_file.open(mode='w'), indent=4)
-
-    def _get_version_hashes(self) -> Dict[str, str]:
-        version_hashes = {}
-        for path in self.hashable_files:
-            key, digest = self._hash_file(path)
-            version_hashes[key] = digest
-        return version_hashes
-
     def _format_file_s3_path(self, path: Path) -> str:
         key = self._get_key(path)
         return f"{self.s3_job_path}/{key}"
+
+    def _format_shared_s3_path(self, path: Path) -> str:
+        key = self._get_key(path)
+        return f"s3://{self.bucket}/{key}"
 
     def create(self, config_template: str, script_template: str) -> None:
 
@@ -131,44 +90,35 @@ class GluedJob:
         else:
             print(f'The job {self.job_path.name} already exists.')
 
-    def sync_job(self) -> None:
-        with Pool(cpu_count()) as pool:
-            files = self.list_job_files()
-            pool.map(self._upload_object_to_s3, files)
-
-    def list_job_files(self) -> List[Path]:
-        return [path for path in self.job_path.glob('**/*.*') if path.is_file()]
-
-    def create_version(self) -> None:
-        version_hashes = self._get_version_hashes()
-        self._save_version(version_hashes)
-
-    def fetch_s3_version(self) -> Dict[str, str]:
-        s3_client = boto3.client('s3')
-        key = self._get_key(self.version_file)
-        with BytesIO() as buffer:
-            s3_client.download_fileobj(self.bucket, f"glue_jobs/{key}", buffer)
-            buffer.seek(0)
-            return json.load(buffer)
-
     def load_config(self) -> None:
-        try:
-            self.config = yaml.safe_load(self.config_path.open())['job_config']
-            py_files_str = ', '.join([self._format_file_s3_path(p) for p in self.py_files])
-            jar_files_str = ', '.join([self._format_file_s3_path(p) for p in self.jar_files])
+        config = yaml.safe_load(self.config_path.open())
+        self.config = config['job_config']
 
-            if py_files_str:
-                self.config['DefaultArguments']['--extra-py-files'] = py_files_str
+        shared = config.get('shared', [])
 
-            if jar_files_str:
-                self.config['DefaultArguments']['--extra-jars'] = jar_files_str
+        self.shared_paths = []
 
-        except TypeError:
-            print('TypeError loading job config.yml Check config and try again')
-            exit()
-        except FileNotFoundError:
-            print('FileNotFoundError while loading config.yml Check that config.yml exists in the job dir')
-            exit()
+        for s in shared:
+            path = self.shared_dir / s / f"{s}.zip"
+            path = self._format_shared_s3_path(path)
+            self.shared_paths.append(path)
+
+        shared_py_files_str = ','.join(self.shared_paths)
+
+        py_files_str = ','.join([self._format_file_s3_path(p) for p in self.py_files])
+        jar_files_str = ','.join([self._format_file_s3_path(p) for p in self.jar_files])
+
+        if shared_py_files_str:
+            py_files_str = f"{py_files_str}, {shared_py_files_str}"
+
+        if py_files_str.startswith(', '):
+            py_files_str = py_files_str.lstrip(', ')
+
+        if py_files_str:
+            self.config['DefaultArguments']['--extra-py-files'] = py_files_str
+
+        if jar_files_str:
+            self.config['DefaultArguments']['--extra-jars'] = jar_files_str
 
     def create_or_update_job(self) -> None:
         glue_client = boto3.client('glue')
@@ -218,5 +168,5 @@ class GluedJob:
         self.delete_glue_job()
 
     def deploy(self) -> None:
-        self.sync_job()
+        self.sync()
         self.create_or_update_job()
