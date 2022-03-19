@@ -3,23 +3,23 @@ import yaml
 import botocore
 from pathlib import Path
 from typing import List
-from glued.environment import DEFAULT_S3_BUCKET
+from glued.environment.variables import DEFAULT_S3_BUCKET
 from glued.src.base_file_controller import BaseFileController
 
 
 class GluedJob(BaseFileController):
-
-    def __init__(self,
-                 parent_dir: Path,
-                 job_name: str,
-                 bucket: str = DEFAULT_S3_BUCKET) -> None:
-        super().__init__(parent_dir=parent_dir,
-                         dir_name=job_name,
-                         bucket=bucket,
-                         bucket_prefix='glue_jobs')
+    def __init__(
+        self, parent_dir: Path, job_name: str, bucket: str = DEFAULT_S3_BUCKET
+    ) -> None:
+        super().__init__(
+            parent_dir=parent_dir,
+            dir_name=job_name,
+            bucket=bucket,
+            bucket_prefix="glue_jobs",
+        )
 
         self.job_name = job_name
-        self.shared_dir = self.parent_dir / 'shared'
+        self.shared_dir = self.parent_dir / "shared"
         self.shared_paths = []
         self.config = {}
 
@@ -33,31 +33,31 @@ class GluedJob(BaseFileController):
 
     @property
     def py_files_path(self) -> Path:
-        return self.job_path / 'py'
+        return self.job_path / "py"
 
     @property
     def jars_path(self) -> Path:
-        return self.job_path / 'jars'
+        return self.job_path / "jars"
 
     @property
     def config_path(self) -> Path:
-        return self.job_path / 'config.yml'
+        return self.job_path / "config.yml"
 
     @property
     def script_path(self) -> Path:
-        return self.job_path / 'main.py'
+        return self.job_path / "main.py"
 
     @property
     def jar_files(self) -> List[Path]:
         try:
-            return [p for p in self.jars_path.glob('**/*.jar')]
+            return [p for p in self.jars_path.glob("**/*.jar")]
         except FileNotFoundError:
             return []
 
     @property
     def py_files(self) -> List[Path]:
         try:
-            return [p for p in self.py_files_path.glob('**/*.py')]
+            return [p for p in self.py_files_path.glob("**/*.py")]
         except FileNotFoundError:
             return []
 
@@ -88,13 +88,13 @@ class GluedJob(BaseFileController):
             self._save_version(version_hashes)
 
         else:
-            print(f'The job {self.job_path.name} already exists.')
+            print(f"The job {self.job_path.name} already exists.")
 
     def load_config(self) -> None:
         config = yaml.safe_load(self.config_path.open())
-        self.config = config['job_config']
+        self.config = config["job_config"]
 
-        shared = config.get('shared', [])
+        shared = config.get("shared", [])
 
         self.shared_paths = []
 
@@ -103,29 +103,29 @@ class GluedJob(BaseFileController):
             path = self._format_shared_s3_path(path)
             self.shared_paths.append(path)
 
-        shared_py_files_str = ','.join(self.shared_paths)
+        shared_py_files_str = ",".join(self.shared_paths)
 
-        py_files_str = ','.join([self._format_file_s3_path(p) for p in self.py_files])
-        jar_files_str = ','.join([self._format_file_s3_path(p) for p in self.jar_files])
+        py_files_str = ",".join([self._format_file_s3_path(p) for p in self.py_files])
+        jar_files_str = ",".join([self._format_file_s3_path(p) for p in self.jar_files])
 
         if shared_py_files_str:
             py_files_str = f"{py_files_str}, {shared_py_files_str}"
 
-        if py_files_str.startswith(', '):
-            py_files_str = py_files_str.lstrip(', ')
+        if py_files_str.startswith(", "):
+            py_files_str = py_files_str.lstrip(", ")
 
         if py_files_str:
-            self.config['DefaultArguments']['--extra-py-files'] = py_files_str
+            self.config["DefaultArguments"]["--extra-py-files"] = py_files_str
 
         if jar_files_str:
-            self.config['DefaultArguments']['--extra-jars'] = jar_files_str
+            self.config["DefaultArguments"]["--extra-jars"] = jar_files_str
 
     def create_or_update_job(self) -> None:
-        glue_client = boto3.client('glue')
+        glue_client = boto3.client("glue")
 
         try:
             # check if the glue job exists
-            job_exists = glue_client.get_job(JobName=self.config['Name'])
+            job_exists = glue_client.get_job(JobName=self.config["Name"])
 
         except botocore.exceptions.ClientError:
             # the job does not exist, set to None to create it.
@@ -136,7 +136,7 @@ class GluedJob(BaseFileController):
             # create and update glue api have different parameters for job name, so pop the name param
             # out of our config and pass it to the 'JobName' parameter of the update api.
             params = self.config.copy()
-            job_name = params.pop('Name')
+            job_name = params.pop("Name")
 
             # request a job update, if it fails a client exception is raised.
             _ = glue_client.update_job(JobName=job_name, JobUpdate=params)
@@ -146,22 +146,22 @@ class GluedJob(BaseFileController):
             _ = glue_client.create_job(**self.config)
 
     def delete_job_files(self) -> None:
-        s3_client = boto3.client('s3')
-        object_paths = s3_client.list_objects_v2(Bucket=self.bucket, Prefix=f'glue_jobs/{self.job_name}')
+        s3_client = boto3.client("s3")
+        object_paths = s3_client.list_objects_v2(
+            Bucket=self.bucket, Prefix=f"glue_jobs/{self.job_name}"
+        )
 
         try:
-            object_paths = [path['Key'] for path in object_paths['Contents']]
+            object_paths = [path["Key"] for path in object_paths["Contents"]]
         except KeyError:
             return
 
-        to_delete = {
-            'Objects': [{'Key': path} for path in object_paths]
-        }
+        to_delete = {"Objects": [{"Key": path} for path in object_paths]}
         _ = s3_client.delete_objects(Bucket=self.bucket, Delete=to_delete)
 
     def delete_glue_job(self) -> None:
-        glue_client = boto3.client('glue')
-        glue_client.delete_job(JobName=self.config['Name'])
+        glue_client = boto3.client("glue")
+        glue_client.delete_job(JobName=self.config["Name"])
 
     def delete(self) -> None:
         self.delete_job_files()

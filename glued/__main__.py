@@ -1,4 +1,3 @@
-
 from glued.cli import parse_args
 from dotenv import load_dotenv
 
@@ -12,7 +11,7 @@ def main() -> None:
     cmd.func(cmd)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     This is here to allow execution by referencing the project directory instead of a .py file.
     """

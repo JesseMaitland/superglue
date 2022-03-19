@@ -85,17 +85,19 @@ unlink:
 #              Commands for testing                         #
 #############################################################
 
-
 .PHONY: lint
 lint:
-	. venv/bin/activate \
-	&& python -m flake8 ${PROJECT_DIR} ${TEST_DIR}
+	. venv/bin/activate && python -m black ${PROJECT_DIR} ${TEST_DIR} --check
+
+
+.PHONY: format
+format:
+	. venv/bin/activate && python -m black ${PROJECT_DIR} ${TEST_DIR}
 
 
 .PHONY: test
 test:
-	. venv/bin/activate \
-	&& python -m pytest ${TEST_DIR} -p no:warnings -s
+	. venv/bin/activate && python -m pytest ${TEST_DIR} -p no:warnings -s
 
 
 .PHONY: qa

@@ -10,7 +10,9 @@ def init(cmd: Namespace) -> None:
     project = GluedProject()
     template_controller = TemplateController()
 
-    glued_config = template_controller.get_template_content('project_config.template.yml')
+    glued_config = template_controller.get_template_content(
+        "project_config.template.yml"
+    )
 
     project.create(glued_config)
 
@@ -20,10 +22,7 @@ def sync(cmd: Namespace) -> None:
     jobs_to_sync = []
 
     for job_name in project.list_jobs():
-        job = GluedJob(
-            parent_dir=project.jobs_root,
-            job_name=job_name
-        )
+        job = GluedJob(parent_dir=project.jobs_root, job_name=job_name)
 
         job.load_config()
         job.create_version()
@@ -40,10 +39,7 @@ def sync(cmd: Namespace) -> None:
 
     modules_to_sync = []
     for module_name in project.list_modules():
-        module = GluedModule(
-            parent_dir=project.shared_root,
-            module_name=module_name
-        )
+        module = GluedModule(parent_dir=project.shared_root, module_name=module_name)
 
         module.create_version()
         module.create_zip()
@@ -60,7 +56,7 @@ def sync(cmd: Namespace) -> None:
             modules_to_sync.append(module)
 
     for module in modules_to_sync:
-        print(f'sync module {module.module_name}')
+        print(f"sync module {module.module_name}")
         module.sync()
 
     print("Everything up to date!")
