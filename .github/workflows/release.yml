@@ -1,0 +1,23 @@
+
+name: Release python package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: make ci-install-dependencies
+      - run: make ci-configure-git
+          semantic-release publish --post
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}

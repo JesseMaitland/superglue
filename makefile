@@ -1,25 +1,28 @@
 #!/usr/bin/env bash
 
-export REQ_FILE = requirements.txt
+export REQ_FILE = requirements/development.txt
 export PROJECT_DIR = glued
 export PROJECT_NAME = glued
 export TEST_DIR = tests
+export EMAIL = jesse.maitland@heyjobs.de
+export USER = "Jesse Maitland"
+
 
 #############################################################
 #              Commands for Python environment              #
 #############################################################
 
-.PHONY: py-init
-py-init:
+.PHONY: dev-init
+dev-init:
 	if [[ -d ./venv ]]; then rm -rf venv; fi \
-	&& python3.6 -m venv venv \
+	&& python3 -m venv venv \
 	&& . venv/bin/activate \
 	&& pip install --upgrade pip setuptools wheel --progress-bar off \
 	&& pip install -r ${REQ_FILE} --progress-bar off
 
 
-.PHONY: requirements
-requirements:
+.PHONY: dev-requirements
+dev-requirements:
 	if [[ -f ${REQ_FILE} ]]; then rm -f ${REQ_FILE}; fi \
 	&& . venv/bin/activate \
 	&& pip freeze | grep ${PROJECT_NAME} -v > ${REQ_FILE}
@@ -59,7 +62,7 @@ rm-egg:
 
 .PHONY: clean
 clean:
-	make py-init
+	make init
 	make rm-zip
 	make rm-egg
 	make unlink
@@ -68,6 +71,23 @@ clean:
 build:
 	. venv/bin/activate \
 	&& python setup.py sdist bdist_wheel
+
+
+#############################################################
+#                  Commands for CI                          #
+#############################################################
+
+.PHONY: ci-install-dependencies
+ci-install-dependencies:
+	pip install --upgrade pip setuptools wheel --progress-bar off \
+	&& pip install -r ${REQ_FILE} --progress-bar off
+
+
+.PHONY: ci-configure-git
+ci-configure-git:
+	git config --global user.email "${EMAIL}" \
+	&& git config --global user.name "${USER}"
+
 
 #############################################################
 #              Commands creating links                      #
