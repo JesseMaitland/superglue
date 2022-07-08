@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
+__version__ = '0.0.0'
 
 setup(
     name='glued',
-    version=VERSION,
+    version=__version__,
     author='Jesse Maitland',
     discription='A cli tool to do some pretty rad stuff!',
     include_package_data=True,
     packages=find_packages(exclude=('tests*', 'venv')),
     entry_points={'console_scripts': ['glued = glued.__main__:main']},
-    python_requires='>=3'
+    python_requires='>=3.8'
 )
