@@ -9,8 +9,9 @@ def run(cmd: Namespace) -> None:
     project = GluedProject()
 
     module = GluedModule(parent_dir=project.shared_root, module_name="spam")
-
+    module.create_version()
     module.create_zip()
+
     module.sync()
 
     job = GluedJob(parent_dir=project.jobs_root, job_name="foo")

@@ -14,6 +14,7 @@ class GluedModule(BaseFileController):
         self.root_module = parent_dir / module_name
         self.module_path = parent_dir / module_name / module_name
         self.zip_path = self.root_module / f"{self.module_name}.zip"
+        self.relative_root = Path.cwd()
 
         super(GluedModule, self).__init__(
             parent_dir=parent_dir,
@@ -37,4 +38,6 @@ class GluedModule(BaseFileController):
     def create_zip(self) -> None:
         with zipfile.ZipFile(self.zip_path, mode="w") as zip_file:
             for file in self.module_path.glob("**/*.py"):
-                zip_file.write(filename=file, arcname=file.name)
+                content = file.read_text()
+                rel_path = file.relative_to(self.root_module).as_posix()
+                zip_file.writestr(rel_path, content)

@@ -4,7 +4,7 @@ from argparse import (
 from glued.cli import job
 from glued.cli import project
 from glued.cli import debug
-from glued.cli import shared
+from glued.cli import module
 
 
 def parse_args():
@@ -49,13 +49,13 @@ def parse_args():
     debug_command.set_defaults(func=debug.run)
 
     # shared commands
-    shared_parser = sub_parser.add_parser("shared")
+    shared_parser = sub_parser.add_parser("module")
     shared_command_subparser = shared_parser.add_subparsers()
 
     # shared new command
     shared_new_command = shared_command_subparser.add_parser("new")
     shared_new_command.add_argument("name")
-    shared_new_command.set_defaults(func=shared.new)
+    shared_new_command.set_defaults(func=module.new)
 
     # Parse the arguments passed into the program from the entry point.
     return parser.parse_args()

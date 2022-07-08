@@ -42,8 +42,6 @@ def sync(cmd: Namespace) -> None:
         module = GluedModule(parent_dir=project.shared_root, module_name=module_name)
 
         module.create_version()
-        module.create_zip()
-
         local_version = module.version
 
         try:
@@ -57,6 +55,7 @@ def sync(cmd: Namespace) -> None:
 
     for module in modules_to_sync:
         print(f"sync module {module.module_name}")
+        module.create_zip()
         module.sync()
 
     print("Everything up to date!")

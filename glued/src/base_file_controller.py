@@ -32,11 +32,16 @@ class BaseFileController:
 
     @property
     def hashable_files(self) -> List[Path]:
-        return [
-            path
-            for path in self.list_all_files()
-            if path.name not in (".version", ".DS_Store")
-        ]
+        paths = []
+        filters = ("__pycache__", ".version", ".DS_Store")
+
+        for path in self.list_all_files():
+            parts = path.as_posix().split('/')
+
+            check = [f for f in filters if f in parts]
+            if not check and '.zip' != path.suffix:
+                paths.append(path)
+        return paths
 
     @property
     def s3_prefix(self) -> str:
