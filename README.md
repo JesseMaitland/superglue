@@ -1,6 +1,6 @@
 # Glued
 ## A CLI tool for developing and deploying AWS glue jobs
-### VERSION 0.0.0
+### VERSION 0.1.0
 
 # Getting Started
 ```
