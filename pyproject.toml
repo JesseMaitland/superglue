@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "glued"
+version = "0.0.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+	"python-dotenv==0.20.0",
+	"pyaml==21.10.1",
+	"boto3==1.20.49",
+	"Jinja2==3.0.3"
+]
+
+[tool.setuptools.packages.find]
+exclude = ["tests*"]
+
+[project.scripts]
+glued = "glued.__main__:main"
+
+
+[tool.semantic_release]
+version_variable = "glued/__init__.py:__version__"
+version_toml = "pyproject.toml:project.version"
+version_pattern = "README.md:VERSION {version}"
+upload_to_pypi = false

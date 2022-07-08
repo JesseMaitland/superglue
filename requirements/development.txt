@@ -1,4 +1,6 @@
 # requirements for development and testing
+setuptools==63.1.0
+build==0.8.0
 python-semantic-release==7.29.4
 pytest==7.1.2
 black==22.6.0
