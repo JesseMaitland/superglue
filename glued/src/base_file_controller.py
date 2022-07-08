@@ -36,10 +36,10 @@ class BaseFileController:
         filters = ("__pycache__", ".version", ".DS_Store")
 
         for path in self.list_all_files():
-            parts = path.as_posix().split('/')
+            parts = path.as_posix().split("/")
 
             check = [f for f in filters if f in parts]
-            if not check and '.zip' != path.suffix:
+            if not check and ".zip" != path.suffix:
                 paths.append(path)
         return paths
 
