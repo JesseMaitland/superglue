@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "glued"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 readme = "README.md"
 requires-python = ">=3.8"
@@ -24,7 +24,7 @@ glued = "glued.__main__:main"
 
 
 [tool.semantic_release]
-version_variable = "glued/cli.version:__version__"
+version_variable = "glued/cli/version.py:__version__"
 version_toml = "pyproject.toml:project.version"
 version_pattern = "README.md:VERSION {version}"
 upload_to_pypi = false
