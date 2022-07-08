@@ -5,7 +5,7 @@ from glued.cli import job
 from glued.cli import project
 from glued.cli import debug
 from glued.cli import module
-
+from glued.cli import version
 
 def parse_args():
 
@@ -13,6 +13,10 @@ def parse_args():
     parser = ArgumentParser()
     sub_parser = parser.add_subparsers(dest="command")
     sub_parser.required = True
+
+    # version
+    version_command = sub_parser.add_parser("version")
+    version_command.set_defaults(func=version.print_version)
 
     # project commands
     project_command = sub_parser.add_parser("project")

@@ -24,7 +24,7 @@ glued = "glued.__main__:main"
 
 
 [tool.semantic_release]
-version_variable = "glued/__init__.py:__version__"
+version_variable = "glued/cli.version:__version__"
 version_toml = "pyproject.toml:project.version"
 version_pattern = "README.md:VERSION {version}"
 upload_to_pypi = false
