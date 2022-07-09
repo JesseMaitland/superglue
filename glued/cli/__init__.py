@@ -52,14 +52,19 @@ def parse_args():
     debug_command = sub_parser.add_parser("debug")
     debug_command.set_defaults(func=debug.run)
 
-    # shared commands
-    shared_parser = sub_parser.add_parser("module")
-    shared_command_subparser = shared_parser.add_subparsers()
+    # module commands
+    module_parser = sub_parser.add_parser("module")
+    module_command_subparser = module_parser.add_subparsers()
 
     # shared new command
-    shared_new_command = shared_command_subparser.add_parser("new")
-    shared_new_command.add_argument("name")
-    shared_new_command.set_defaults(func=module.new)
+    module_new_command = module_command_subparser.add_parser("new")
+    module_new_command.add_argument("name")
+    module_new_command.set_defaults(func=module.new)
+
+    module_build_command = module_command_subparser.add_parser("build")
+    module_build_command.add_argument('name', help="name of module to build or 'all'")
+
+    module_build_command.set_defaults(func=module.build)
 
     # Parse the arguments passed into the program from the entry point.
     return parser.parse_args()

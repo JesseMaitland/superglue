@@ -4,9 +4,13 @@ from glued.src.templating import TemplateController
 from glued.src.project import GluedProject
 from glued.src.job import GluedJob
 from glued.src.module import GluedModule
+from glued.cli.helpers import get_logger
+
+logger = get_logger(__name__)
 
 
 def init(cmd: Namespace) -> None:
+    logger.info("initializing glued project")
     project = GluedProject()
     template_controller = TemplateController()
 
