@@ -7,6 +7,7 @@ from glued.cli import debug
 from glued.cli import module
 from glued.cli import version
 
+
 def parse_args():
 
     # This is the root node of the main parser tree.
@@ -22,31 +23,36 @@ def parse_args():
     project_command = sub_parser.add_parser("project")
     project_command_subparser = project_command.add_subparsers()
 
-    # project new commands
     project_init_command = project_command_subparser.add_parser("init")
     project_init_command.set_defaults(func=project.init)
 
     project_sync_command = project_command_subparser.add_parser("sync")
     project_sync_command.set_defaults(func=project.sync)
 
+    project_status_command = project_command_subparser.add_parser('status')
+    project_status_command.set_defaults(func=project.status)
+
     # job commands
     job_command = sub_parser.add_parser("job")
     job_command_subparser = job_command.add_subparsers()
+    job_command.add_argument('name')
 
     # job new commands
     job_new_command = job_command_subparser.add_parser("new")
     job_new_command.set_defaults(func=job.new)
-    job_new_command.add_argument("name")
+    # job_new_command.add_argument("name")
 
-    # job sync command
     job_sync_command = job_command_subparser.add_parser("deploy")
     job_sync_command.set_defaults(func=job.deploy)
-    job_sync_command.add_argument("name")
+    # job_sync_command.add_argument("name")
 
-    # job delete command
     job_delete_command = job_command_subparser.add_parser("delete")
     job_delete_command.set_defaults(func=job.delete)
-    job_delete_command.add_argument("name")
+    # job_delete_command.add_argument("name")
+
+    job_check_command = job_command_subparser.add_parser('check')
+    job_check_command.set_defaults(func=job.check)
+    # job_check_command.add_argument("name")
 
     # debug
     debug_command = sub_parser.add_parser("debug")

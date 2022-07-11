@@ -1,6 +1,7 @@
 import boto3
 import yaml
 import botocore
+import json
 from pathlib import Path
 from typing import List
 from glued.environment.variables import DEFAULT_S3_BUCKET
@@ -20,12 +21,17 @@ class GluedJob(BaseFileController):
 
         self.job_name = job_name
         self.shared_dir = self.parent_dir / "shared"
+        self.check_dir = self.parent_dir / self.job_name / "check"
         self.shared_paths = []
         self.config = {}
 
     @property
     def s3_script_path(self) -> str:
         return f"{self.s3_prefix}/{self.job_name}/main.py"
+
+    @property
+    def s3_job_path(self) -> str:
+        return f"{self.s3_prefix}/{self.job_name}"
 
     @property
     def job_path(self) -> Path:
@@ -119,6 +125,11 @@ class GluedJob(BaseFileController):
 
         if jar_files_str:
             self.config["DefaultArguments"]["--extra-jars"] = jar_files_str
+
+    def dump_config(self) -> None:
+        check_file = self.check_dir / "payload.json"
+        self.check_dir.mkdir(exist_ok=True)
+        json.dump(self.config, check_file.open(mode="w+"), indent=4, sort_keys=True)
 
     def create_or_update_job(self) -> None:
         glue_client = boto3.client("glue")

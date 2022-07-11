@@ -17,6 +17,16 @@ glued project init
 glued job new <job-name>
 ```
 
+## Create a new shared module
+```
+glued module new <module-name>
+```
+
+## Check project status
+```
+glued project status
+```
+
 ### Job Directory Structure
 ```
 glue_jobs

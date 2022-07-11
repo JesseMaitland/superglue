@@ -1,0 +1,1 @@
+Re-factor as to not create the GluedProject in each entry point every time. Not very DRY.

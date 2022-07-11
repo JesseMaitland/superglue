@@ -1,10 +1,11 @@
 import botocore
 from argparse import Namespace
+from typing import List
 from glued.src.templating import TemplateController
 from glued.src.project import GluedProject
 from glued.src.job import GluedJob
 from glued.src.module import GluedModule
-from glued.cli.helpers import get_logger
+from glued.cli.helpers import get_logger, list_modules_to_sync, list_jobs_to_sync
 
 logger = get_logger(__name__)
 
@@ -23,43 +24,25 @@ def init(cmd: Namespace) -> None:
 
 def sync(cmd: Namespace) -> None:
     project = GluedProject()
-    jobs_to_sync = []
 
-    for job_name in project.list_jobs():
-        job = GluedJob(parent_dir=project.jobs_root, job_name=job_name)
-
-        job.load_config()
-        job.create_version()
-
-        local_version = job.version
-        remote_version = job.fetch_s3_version()
-
-        if local_version != remote_version:
-            print(f"{job.job_name} is not up to date and is marked for deployment.")
-            jobs_to_sync.append(job)
+    jobs_to_sync = list_jobs_to_sync(project, logger)
 
     for job in jobs_to_sync:
+        logger.info(f"deploying job {job.job_name}")
         job.deploy()
 
-    modules_to_sync = []
-    for module_name in project.list_modules():
-        module = GluedModule(parent_dir=project.shared_root, module_name=module_name)
-
-        module.create_version()
-        local_version = module.version
-
-        try:
-            remote_version = module.fetch_s3_version()
-        except botocore.exceptions.ClientError:
-            print("no remote version found")
-            remote_version = None
-
-        if local_version != remote_version:
-            modules_to_sync.append(module)
+    modules_to_sync = list_modules_to_sync(project, logger)
 
     for module in modules_to_sync:
-        print(f"sync module {module.module_name}")
+        logger.info(f"deploying module {module.module_name}")
         module.create_zip()
-        module.sync()
+        module.deploy()
 
-    print("Everything up to date!")
+
+def status(cmd: Namespace) -> None:
+
+    project = GluedProject()
+
+    _ = list_jobs_to_sync(project, logger)
+    _ = list_modules_to_sync(project, logger)
+
