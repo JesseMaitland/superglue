@@ -23,7 +23,11 @@ def build(cmd: Namespace) -> None:
 
     options = SimpleNamespace()
     options.ALL = 'all'
-    options.MODULES = glued_modules
+
+    if cmd.name in glued_modules:
+        options.MODULES = cmd.name
+    else:
+        options.MODULES = None
 
     match cmd.name:
 

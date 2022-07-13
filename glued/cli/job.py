@@ -43,9 +43,9 @@ def deploy(cmd: Namespace) -> None:
 
     options = SimpleNamespace()
     options.ALL = 'all'
-    options.MODULES = glued_jobs
+    options.JOBS = glued_jobs
 
-    match cmd.name:
+    match job_name:
 
         case options.ALL:
 
@@ -59,7 +59,7 @@ def deploy(cmd: Namespace) -> None:
                 job.create_version()
                 job.deploy()
 
-        case options.MODULES:
+        case options.JOBS:
 
             job = GluedJob(
                 parent_dir=project.jobs_root, job_name=cmd, bucket=DEFAULT_S3_BUCKET
