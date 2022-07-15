@@ -1,34 +1,21 @@
 from argparse import Namespace
-from types import SimpleNamespace
 from jinja2 import Template
 from glued.environment.variables import IAM_ROLE, DEFAULT_S3_BUCKET
 from glued.src.project import GluedProject
 from glued.src.job import GluedJob
 from glued.src.templating import TemplateController
-from glued.cli.helpers import validate_input, get_logger
-
-
-logger = get_logger(__name__)
 
 
 def new(cmd: Namespace) -> None:
-    logger.info(f"creating new glue job config with name {cmd.name}")
-
+    print(f"creating new glue job config with name {cmd.name}")
     project = GluedProject()
     template_controller = TemplateController()
-    job_name = cmd.name
 
-    validate_input(job_name, logger)
+    job = GluedJob(project.jobs_root, cmd.name)
 
-    job = GluedJob(project.jobs_root, job_name)
+    config_template = template_controller.get_template_content("job_config.template.yml")
 
-    config_template = template_controller.get_template_content(
-        "job_config.template.yml"
-    )
-
-    config_template = Template(config_template).render(
-        iam_role=IAM_ROLE, script_location=job.s3_script_path
-    )
+    config_template = Template(config_template).render(iam_role=IAM_ROLE, script_location=job.s3_script_path)
 
     script_template = template_controller.get_template_content("main.template.py")
     job.create(config_template, script_template)
@@ -36,74 +23,38 @@ def new(cmd: Namespace) -> None:
 
 def deploy(cmd: Namespace) -> None:
     project = GluedProject()
-    glued_jobs = project.list_jobs()
-    job_name = cmd.name
 
-    validate_input(job_name, logger)
-
-    options = SimpleNamespace()
-    options.ALL = 'all'
-
-    if job_name in glued_jobs:
-        options.JOBS = job_name
-    else:
-        options.JOBS = None
-
-    match job_name:
-
-        case options.ALL:
-
-            for glued_job in glued_jobs:
-
-                job = GluedJob(
-                    parent_dir=project.jobs_root, job_name=glued_job, bucket=DEFAULT_S3_BUCKET
-                )
-
-                job.load_config()
-                job.create_version()
-                job.deploy()
-
-        case options.JOBS:
-
-            job = GluedJob(
-                parent_dir=project.jobs_root, job_name=job_name, bucket=DEFAULT_S3_BUCKET
-            )
+    if cmd.name == "all":
+        for glued_job in project.list_jobs():
+            job = GluedJob(parent_dir=project.jobs_root, job_name=glued_job, bucket=DEFAULT_S3_BUCKET)
 
             job.load_config()
             job.create_version()
             job.deploy()
+        exit()
 
-        case other:
-            logger.error(f'Either provide a valid job name, or the "all" keyword. '
-                         f'{cmd.name} not found in glue_jobs directory')
+    if cmd.name in project.list_jobs():
+        job = GluedJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=DEFAULT_S3_BUCKET)
+        job.load_config()
+        job.create_version()
+        job.deploy()
+        exit()
+
+    # in all other cases, there was some kind of invalid argument value
+    print(f"Either provide a valid job name, or the 'all' keyword.{cmd.name} not found in glue_jobs directory")
 
 
 def delete(cmd: Namespace) -> None:
-
     project = GluedProject()
-    job_name = cmd.name
-    validate_input(job_name, logger)
 
-    job = GluedJob(
-        parent_dir=project.jobs_root, job_name=cmd.name, bucket=DEFAULT_S3_BUCKET
-    )
-
-    if not job.job_path.exists():
-        print(f"The job {cmd.name} does not exist")
-    else:
-        job.load_config()
-        job.delete()
+    job = GluedJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=DEFAULT_S3_BUCKET)
+    job.load_config()
+    job.delete()
 
 
 def check(cmd: Namespace) -> None:
     project = GluedProject()
-    job_name = cmd.name
-    validate_input(job_name, logger)
-
-    job = GluedJob(
-        parent_dir=project.jobs_root, job_name=cmd.name, bucket=DEFAULT_S3_BUCKET
-    )
+    job = GluedJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=DEFAULT_S3_BUCKET)
 
     job.load_config()
     job.dump_config()
-

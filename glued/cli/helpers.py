@@ -14,16 +14,7 @@ def get_logger(name: str):
     return logger
 
 
-def validate_input(name: str, logger: Logger) -> str:
-    forbidden = "!""#$%&\'()*+,./:;<=>?@[\\]^`{|}~"
-
-    for char in name:
-        if char in forbidden:
-            logger.error(f"The character {char} is not allowed in job names. ")
-            exit()
-
-
-def list_jobs_to_sync(project: GluedProject, logger: Logger) -> List[GluedJob]:
+def list_jobs_to_sync(project: GluedProject) -> List[GluedJob]:
     jobs_to_sync = []
 
     for job_name in project.list_jobs():
@@ -36,14 +27,16 @@ def list_jobs_to_sync(project: GluedProject, logger: Logger) -> List[GluedJob]:
         remote_version = job.fetch_s3_version()
 
         if local_version != remote_version:
-            logger.info(f"{job.job_name} is not up to date and is marked for deployment")
+            print(f"{job.job_name} is not up to date and is marked for deployment")
             jobs_to_sync.append(job)
 
     return jobs_to_sync
 
 
-def list_modules_to_sync(project: GluedProject, logger: Logger) -> List[GluedModule]:
+def list_modules_to_sync(project: GluedProject) -> List[GluedModule]:
+
     modules_to_sync = []
+
     for module_name in project.list_modules():
         module = GluedModule(parent_dir=project.shared_root, module_name=module_name)
 
@@ -57,6 +50,6 @@ def list_modules_to_sync(project: GluedProject, logger: Logger) -> List[GluedMod
             remote_version = None
 
         if local_version != remote_version:
-            logger.info(f"{module.module_name} is not up to date and is marked for deployment")
+            print(f"{module.module_name} is not up to date and is marked for deployment")
             modules_to_sync.append(module)
     return modules_to_sync

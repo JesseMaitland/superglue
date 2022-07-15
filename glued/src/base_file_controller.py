@@ -9,13 +9,10 @@ from glued.environment.variables import DEFAULT_S3_BUCKET
 
 
 class BaseFileController:
-    def __init__(
-        self,
-        parent_dir: Path,
-        dir_name: str,
-        bucket_prefix: str,
-        bucket: str = DEFAULT_S3_BUCKET,
-    ) -> None:
+    """Base file controller used to control base level file access"""
+
+    def __init__(self, parent_dir: Path, dir_name: str, bucket_prefix: str, bucket: str = DEFAULT_S3_BUCKET) -> None:
+
         self.parent_dir = parent_dir
         self.dir_name = dir_name
         self.bucket_prefix = bucket_prefix
@@ -51,17 +48,16 @@ class BaseFileController:
 
         s3_client = boto3.client("s3")
         key = self._get_key(path)
-        s3_client.upload_file(
-            path.as_posix(), self.bucket, f"{self.bucket_prefix}/{key}"
-        )
+        s3_client.upload_file(path.as_posix(), self.bucket, f"{self.bucket_prefix}/{key}")
 
     def _get_key(self, path: Path) -> str:
         return path.relative_to(self.parent_dir).as_posix()
 
     def _hash_file(self, path: Path) -> Tuple[str, str]:
-        key = self._get_key(path)
 
+        key = self._get_key(path)
         md5_hash = md5()
+
         with path.open("rb") as data:
             for chunk in iter(lambda: data.read(4096), b""):
                 md5_hash.update(chunk)
@@ -96,9 +92,7 @@ class BaseFileController:
         s3_client = boto3.client("s3")
         key = self._get_key(self.version_file)
         with BytesIO() as buffer:
-            s3_client.download_fileobj(
-                self.bucket, f"{self.bucket_prefix}/{key}", buffer
-            )
+            s3_client.download_fileobj(self.bucket, f"{self.bucket_prefix}/{key}", buffer)
             buffer.seek(0)
             return json.load(buffer)
 

@@ -12,14 +12,12 @@ def _get_print_stream_format() -> str:
         return f"{fg.magenta}%(levelname)s{fg.rs} : {fg.yellow}%(asctime)s{fg.rs} : {fg.cyan}%(message)s{fg.rs}"
 
 
-def format_logger_filename(name: str = 'glued') -> str:
+def format_logger_filename(name: str = "glued") -> str:
     name_ts = str(datetime.datetime.now().strftime("%Y-%m-%d_%H:%S"))
     return f"{name}-{name_ts}.log"
 
 
-def logger_factory(
-    file_path: Path, logger_name: str, print_stream: bool = True
-) -> logging.Logger:
+def logger_factory(file_path: Path, logger_name: str, print_stream: bool = True) -> logging.Logger:
     """
     Args:
         file_path:    The path to the log file to use

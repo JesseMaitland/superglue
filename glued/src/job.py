@@ -9,9 +9,8 @@ from glued.src.base_file_controller import BaseFileController
 
 
 class GluedJob(BaseFileController):
-    def __init__(
-        self, parent_dir: Path, job_name: str, bucket: str = DEFAULT_S3_BUCKET
-    ) -> None:
+    def __init__(self, parent_dir: Path, job_name: str, bucket: str = DEFAULT_S3_BUCKET) -> None:
+
         super().__init__(
             parent_dir=parent_dir,
             dir_name=job_name,
@@ -26,12 +25,12 @@ class GluedJob(BaseFileController):
         self.config = {}
 
     @property
-    def s3_script_path(self) -> str:
-        return f"{self.s3_prefix}/{self.job_name}/main.py"
-
-    @property
     def s3_job_path(self) -> str:
         return f"{self.s3_prefix}/{self.job_name}"
+
+    @property
+    def s3_script_path(self) -> str:
+        return f"{self.s3_job_path}/main.py"
 
     @property
     def job_path(self) -> Path:
@@ -62,14 +61,16 @@ class GluedJob(BaseFileController):
 
     @property
     def py_files(self) -> List[Path]:
+        ext = ["*.py", "*.jar"]
         try:
-            return [p for p in self.py_files_path.glob("**/*.py")]
+            return [p for e in ext for p in self.py_files_path.glob(f"**/{e}")]
         except FileNotFoundError:
             return []
 
     def _format_file_s3_path(self, path: Path) -> str:
-        key = self._get_key(path)
-        return f"{self.s3_job_path}/{key}"
+        key = Path(self._get_key(path))
+        key_str = "/".join(key.parts[-2:])
+        return f"{self.s3_job_path}/{key_str}"
 
     def _format_shared_s3_path(self, path: Path) -> str:
         key = self._get_key(path)
@@ -97,7 +98,7 @@ class GluedJob(BaseFileController):
             print(f"The job {self.job_path.name} already exists.")
 
     def load_config(self) -> None:
-        # TODO: This is buggy, name paths are not correct, yet somehow the files are uploaded correctly
+
         config = yaml.safe_load(self.config_path.open())
         self.config = config["job_config"]
 
@@ -120,7 +121,7 @@ class GluedJob(BaseFileController):
         jar_files_str = jar_files_str.replace(" ", "")
 
         if shared_py_files_str:
-            py_files_str = f"{py_files_str}, {shared_py_files_str}"
+            py_files_str = f"{py_files_str},{shared_py_files_str}"
 
         if py_files_str.startswith(", "):
             py_files_str = py_files_str.lstrip(", ")
@@ -163,9 +164,7 @@ class GluedJob(BaseFileController):
 
     def delete_job_files(self) -> None:
         s3_client = boto3.client("s3")
-        object_paths = s3_client.list_objects_v2(
-            Bucket=self.bucket, Prefix=f"glue_jobs/{self.job_name}"
-        )
+        object_paths = s3_client.list_objects_v2(Bucket=self.bucket, Prefix=f"glue_jobs/{self.job_name}")
 
         try:
             object_paths = [path["Key"] for path in object_paths["Contents"]]

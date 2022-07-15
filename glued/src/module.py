@@ -1,5 +1,3 @@
-import os
-import shutil
 import zipfile
 from pathlib import Path
 from glued.environment.variables import DEFAULT_S3_BUCKET
@@ -7,9 +5,7 @@ from glued.src.base_file_controller import BaseFileController
 
 
 class GluedModule(BaseFileController):
-    def __init__(
-        self, parent_dir: Path, module_name: str, bucket: str = DEFAULT_S3_BUCKET
-    ):
+    def __init__(self, parent_dir: Path, module_name: str, bucket: str = DEFAULT_S3_BUCKET):
         self.module_name = module_name
         self.root_module = parent_dir / module_name
         self.module_path = parent_dir / module_name / module_name

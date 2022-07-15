@@ -19,6 +19,4 @@ class GluedProject:
         return [path.name for path in self.jobs_root.iterdir() if path.is_dir()]
 
     def list_modules(self) -> List[str]:
-        return [
-            path.name for path in self.shared_root.iterdir() if path.name != ".DS_Store"
-        ]
+        return [path.name for path in self.shared_root.iterdir() if path.name != ".DS_Store"]

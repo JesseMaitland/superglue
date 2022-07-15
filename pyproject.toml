@@ -28,3 +28,6 @@ version_variable = "glued/cli/version.py:__version__"
 version_toml = "pyproject.toml:project.version"
 version_pattern = "README.md:VERSION {version}"
 upload_to_pypi = false
+
+[tool.black]
+line_length = 120

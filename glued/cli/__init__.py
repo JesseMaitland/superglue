@@ -1,11 +1,9 @@
-from argparse import (
-    ArgumentParser,
-)  # This is the standard library arg parser, and it works great.
+from argparse import ArgumentParser
 from glued.cli import job
 from glued.cli import project
-from glued.cli import debug
 from glued.cli import module
 from glued.cli import version
+from glued.cli.validaton_actions import ValidateJobCommandName
 
 
 def parse_args():
@@ -29,34 +27,26 @@ def parse_args():
     project_sync_command = project_command_subparser.add_parser("sync")
     project_sync_command.set_defaults(func=project.sync)
 
-    project_status_command = project_command_subparser.add_parser('status')
+    project_status_command = project_command_subparser.add_parser("status")
     project_status_command.set_defaults(func=project.status)
 
     # job commands
     job_command = sub_parser.add_parser("job")
     job_command_subparser = job_command.add_subparsers()
-    job_command.add_argument('name')
+    job_command.add_argument("name", action=ValidateJobCommandName)
 
     # job new commands
     job_new_command = job_command_subparser.add_parser("new")
     job_new_command.set_defaults(func=job.new)
-    # job_new_command.add_argument("name")
 
     job_sync_command = job_command_subparser.add_parser("deploy")
     job_sync_command.set_defaults(func=job.deploy)
-    # job_sync_command.add_argument("name")
 
     job_delete_command = job_command_subparser.add_parser("delete")
     job_delete_command.set_defaults(func=job.delete)
-    # job_delete_command.add_argument("name")
 
-    job_check_command = job_command_subparser.add_parser('check')
+    job_check_command = job_command_subparser.add_parser("check")
     job_check_command.set_defaults(func=job.check)
-    # job_check_command.add_argument("name")
-
-    # debug
-    debug_command = sub_parser.add_parser("debug")
-    debug_command.set_defaults(func=debug.run)
 
     # module commands
     module_parser = sub_parser.add_parser("module")
@@ -68,7 +58,7 @@ def parse_args():
     module_new_command.set_defaults(func=module.new)
 
     module_build_command = module_command_subparser.add_parser("build")
-    module_build_command.add_argument('name', help="name of module to build or 'all'")
+    module_build_command.add_argument("name", help="name of module to build or 'all'")
 
     module_build_command.set_defaults(func=module.build)
 
