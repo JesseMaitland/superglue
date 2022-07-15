@@ -97,6 +97,7 @@ class GluedJob(BaseFileController):
             print(f"The job {self.job_path.name} already exists.")
 
     def load_config(self) -> None:
+        # TODO: This is buggy, name paths are not correct, yet somehow the files are uploaded correctly
         config = yaml.safe_load(self.config_path.open())
         self.config = config["job_config"]
 
@@ -113,6 +114,10 @@ class GluedJob(BaseFileController):
 
         py_files_str = ",".join([self._format_file_s3_path(p) for p in self.py_files])
         jar_files_str = ",".join([self._format_file_s3_path(p) for p in self.jar_files])
+
+        # no spaces allowed
+        py_files_str = py_files_str.replace(" ", "")
+        jar_files_str = jar_files_str.replace(" ", "")
 
         if shared_py_files_str:
             py_files_str = f"{py_files_str}, {shared_py_files_str}"

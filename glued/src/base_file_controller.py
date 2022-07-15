@@ -50,7 +50,6 @@ class BaseFileController:
     def _upload_object_to_s3(self, path: Path) -> None:
 
         s3_client = boto3.client("s3")
-
         key = self._get_key(path)
         s3_client.upload_file(
             path.as_posix(), self.bucket, f"{self.bucket_prefix}/{key}"

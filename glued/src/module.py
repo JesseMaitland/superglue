@@ -39,5 +39,6 @@ class GluedModule(BaseFileController):
         with zipfile.ZipFile(self.zip_path, mode="w") as zip_file:
             for file in self.module_path.glob("**/*.py"):
                 content = file.read_text()
+                content = content.encode("utf-8")
                 rel_path = file.relative_to(self.root_module).as_posix()
                 zip_file.writestr(rel_path, content)

@@ -43,7 +43,11 @@ def deploy(cmd: Namespace) -> None:
 
     options = SimpleNamespace()
     options.ALL = 'all'
-    options.JOBS = glued_jobs
+
+    if job_name in glued_jobs:
+        options.JOBS = job_name
+    else:
+        options.JOBS = None
 
     match job_name:
 
@@ -62,7 +66,7 @@ def deploy(cmd: Namespace) -> None:
         case options.JOBS:
 
             job = GluedJob(
-                parent_dir=project.jobs_root, job_name=cmd, bucket=DEFAULT_S3_BUCKET
+                parent_dir=project.jobs_root, job_name=job_name, bucket=DEFAULT_S3_BUCKET
             )
 
             job.load_config()
