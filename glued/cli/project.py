@@ -4,19 +4,17 @@ from glued.src.project import GluedProject
 from glued.cli.helpers import list_modules_to_sync, list_jobs_to_sync
 
 
+project = GluedProject()
+
+
 def init(cmd: Namespace) -> None:
     print("initializing glued project")
-    project = GluedProject()
     template_controller = TemplateController()
-
     glued_config = template_controller.get_template_content("project_config.template.yml")
-
     project.create(glued_config)
 
 
 def sync(cmd: Namespace) -> None:
-    project = GluedProject()
-
     jobs_to_sync = list_jobs_to_sync(project)
 
     for job in jobs_to_sync:
@@ -32,6 +30,5 @@ def sync(cmd: Namespace) -> None:
 
 
 def status(cmd: Namespace) -> None:
-    project = GluedProject()
     _ = list_jobs_to_sync(project)
     _ = list_modules_to_sync(project)

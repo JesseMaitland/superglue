@@ -6,9 +6,11 @@ from glued.src.job import GluedJob
 from glued.src.templating import TemplateController
 
 
+project = GluedProject()
+
+
 def new(cmd: Namespace) -> None:
     print(f"creating new glue job config with name {cmd.name}")
-    project = GluedProject()
     template_controller = TemplateController()
 
     job = GluedJob(project.jobs_root, cmd.name)
@@ -22,7 +24,6 @@ def new(cmd: Namespace) -> None:
 
 
 def deploy(cmd: Namespace) -> None:
-    project = GluedProject()
 
     if cmd.name == "all":
         for glued_job in project.list_jobs():
@@ -45,16 +46,12 @@ def deploy(cmd: Namespace) -> None:
 
 
 def delete(cmd: Namespace) -> None:
-    project = GluedProject()
-
     job = GluedJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=DEFAULT_S3_BUCKET)
     job.load_config()
     job.delete()
 
 
 def check(cmd: Namespace) -> None:
-    project = GluedProject()
     job = GluedJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=DEFAULT_S3_BUCKET)
-
     job.load_config()
     job.dump_config()

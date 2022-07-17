@@ -158,8 +158,9 @@ class GluedJob(BaseFileController):
             # request a job update, if it fails a client exception is raised.
             _ = glue_client.update_job(JobName=job_name, JobUpdate=params)
 
-        else:  # otherwise create the job for the first time
-            # request create job, if it fails a client exception is raised.
+        else:
+            # otherwise create the job for the first time
+            # if it fails a client exception is raised.
             _ = glue_client.create_job(**self.config)
 
     def delete_job_files(self) -> None:
