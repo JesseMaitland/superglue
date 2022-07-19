@@ -1,6 +1,6 @@
 from argparse import Namespace
-from glued.src.project import GluedProject
-from glued.src.module import GluedModule
+from glued.core.project import GluedProject
+from glued.core.module import GluedModule
 
 
 project = GluedProject()

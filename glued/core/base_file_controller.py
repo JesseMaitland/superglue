@@ -5,13 +5,13 @@ from pathlib import Path
 from hashlib import md5
 from typing import List, Tuple, Dict
 from multiprocessing import Pool, cpu_count
-from glued.environment.variables import DEFAULT_S3_BUCKET
+from glued.environment.variables import GLUED_S3_BUCKET
 
 
 class BaseFileController:
     """Base file controller used to control base level file access"""
 
-    def __init__(self, parent_dir: Path, dir_name: str, bucket_prefix: str, bucket: str = DEFAULT_S3_BUCKET) -> None:
+    def __init__(self, parent_dir: Path, dir_name: str, bucket_prefix: str, bucket: str = GLUED_S3_BUCKET) -> None:
 
         self.parent_dir = parent_dir
         self.dir_name = dir_name

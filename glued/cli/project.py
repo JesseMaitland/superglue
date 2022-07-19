@@ -1,7 +1,6 @@
 from argparse import Namespace
-from glued.src.templating import TemplateController
-from glued.src.project import GluedProject
-from glued.cli.helpers import list_modules_to_sync, list_jobs_to_sync
+from glued.core.project import GluedProject
+from glued.helpers.cli import list_modules_to_sync, list_jobs_to_sync
 
 
 project = GluedProject()
@@ -9,9 +8,7 @@ project = GluedProject()
 
 def init(cmd: Namespace) -> None:
     print("initializing glued project")
-    template_controller = TemplateController()
-    glued_config = template_controller.get_template_content("project_config.template.yml")
-    project.create(glued_config)
+    project.create()
 
 
 def sync(cmd: Namespace) -> None:

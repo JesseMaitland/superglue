@@ -1,17 +1,8 @@
 import botocore
-from logging import Logger
 from typing import List
-from glued.environment.variables import GLUED_LOGGER_DIR
-from glued.src.logger_factory import format_logger_filename, logger_factory
-from glued.src.project import GluedProject
-from glued.src.job import GluedJob
-from glued.src.module import GluedModule
-
-
-def get_logger(name: str) -> Logger:
-    logger_file = format_logger_filename()
-    logger = logger_factory(file_path=GLUED_LOGGER_DIR.joinpath(logger_file), logger_name=name)
-    return logger
+from glued.core.project import GluedProject
+from glued.core.job import GluedJob
+from glued.core.module import GluedModule
 
 
 def list_jobs_to_sync(project: GluedProject) -> List[GluedJob]:

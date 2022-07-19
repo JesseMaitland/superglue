@@ -4,12 +4,12 @@ import botocore
 import json
 from pathlib import Path
 from typing import List
-from glued.environment.variables import DEFAULT_S3_BUCKET
-from glued.src.base_file_controller import BaseFileController
+from glued.environment.variables import GLUED_S3_BUCKET
+from glued.core.base_file_controller import BaseFileController
 
 
 class GluedJob(BaseFileController):
-    def __init__(self, parent_dir: Path, job_name: str, bucket: str = DEFAULT_S3_BUCKET) -> None:
+    def __init__(self, parent_dir: Path, job_name: str, bucket: str = GLUED_S3_BUCKET) -> None:
 
         super().__init__(
             parent_dir=parent_dir,

@@ -1,13 +1,8 @@
-from argparse import (
-    ArgumentParser,
-    Action,
-    Namespace
-)
-
+from argparse import ArgumentParser, Action, Namespace
 from typing import Any
-from glued.src.project import GluedProject
-from glued.src.module import GluedModule
-from glued.src.job import GluedJob
+from glued.core.project import GluedProject
+from glued.core.module import GluedModule
+from glued.core.job import GluedJob
 
 
 def validate_input_string(input_string: str, message: str) -> None:

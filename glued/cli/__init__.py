@@ -3,7 +3,7 @@ from glued.cli import job
 from glued.cli import project
 from glued.cli import module
 from glued.cli import version
-from glued.cli.validaton_actions import ValidateJobCommandName, ValidateModuleCommandName
+from glued.cli.validation import ValidateJobCommandName, ValidateModuleCommandName
 
 
 def parse_args():
