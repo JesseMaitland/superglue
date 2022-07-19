@@ -8,7 +8,7 @@ from glued.src.job import GluedJob
 from glued.src.module import GluedModule
 
 
-def get_logger(name: str):
+def get_logger(name: str) -> Logger:
     logger_file = format_logger_filename()
     logger = logger_factory(file_path=GLUED_LOGGER_DIR.joinpath(logger_file), logger_name=name)
     return logger
