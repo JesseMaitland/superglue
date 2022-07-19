@@ -10,7 +10,7 @@ from glued.environment.variables import GLUED_S3_BUCKET, GLUED_IAM_ROLE
 
 
 def test_default_s3_bucket() -> None:
-    assert GLUED_S3_BUCKET == "foo-bar-bucket"
+    assert GLUED_S3_BUCKET == "some-bucket"
 
 
 def test_iam_role() -> None:
