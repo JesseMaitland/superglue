@@ -4,7 +4,8 @@ import botocore
 import json
 from pathlib import Path
 from typing import List
-from glued.environment.variables import GLUED_S3_BUCKET
+from glued.exceptions import JobNameValidationError
+from glued.environment.variables import GLUED_S3_BUCKET, GLUED_JOB_PREFIX, GLUED_JOB_SUFFIX
 from glued.core.base_file_controller import BaseFileController
 
 
@@ -75,6 +76,20 @@ class GluedJob(BaseFileController):
     def _format_shared_s3_path(self, path: Path) -> str:
         key = self._get_key(path)
         return f"s3://{self.bucket}/{key}"
+
+    def _validate_name_prefix(self) -> None:
+        if GLUED_JOB_PREFIX:
+            if not self.job_name.startswith(GLUED_JOB_PREFIX):
+                raise JobNameValidationError(f"The job name must have prefix {GLUED_JOB_PREFIX}")
+
+    def _validate_name_suffix(self) -> None:
+        if GLUED_JOB_SUFFIX:
+            if not self.job_name.endswith(GLUED_JOB_SUFFIX):
+                raise JobNameValidationError(f"The job name must have suffix {GLUED_JOB_SUFFIX}")
+
+    def validate_name(self) -> None:
+        self._validate_name_prefix()
+        self._validate_name_suffix()
 
     def create(self, config_template: str, script_template: str) -> None:
 

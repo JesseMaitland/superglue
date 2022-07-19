@@ -1,0 +1,2 @@
+class JobNameValidationError(Exception):
+    pass

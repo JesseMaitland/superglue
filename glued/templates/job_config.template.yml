@@ -1,5 +1,5 @@
 job_config:
-  Name: name-of-job-here
+  Name: {{job_name}}
   Description: this is the job description
   # LogUri: string
   Role: {{iam_role}}
