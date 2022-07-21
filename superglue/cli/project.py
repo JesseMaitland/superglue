@@ -1,9 +1,9 @@
 from argparse import Namespace
-from superglue.core.project import GluedProject
+from superglue.core.project import SuperGlueProject
 from superglue.helpers.cli import list_modules_to_sync, list_jobs_to_sync
 
 
-project = GluedProject()
+project = SuperGlueProject()
 
 
 def init(cmd: Namespace) -> None:

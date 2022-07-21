@@ -1,15 +1,18 @@
+import boto3
 import botocore
-from typing import List
-from superglue.core.project import GluedProject
-from superglue.core.job import GluedJob
+from typing import List, Callable, Any
+from superglue.core.project import SuperGlueProject
+from superglue.core.job import SuperGlueJob
 from superglue.core.module import GluedModule
+from superglue.exceptions import InvalidAccountID
+from superglue.environment.variables import SUPERGLUE_AWS_ACCOUNT
 
 
-def list_jobs_to_sync(project: GluedProject) -> List[GluedJob]:
+def list_jobs_to_sync(project: SuperGlueProject) -> List[SuperGlueJob]:
     jobs_to_sync = []
 
     for job_name in project.list_jobs():
-        job = GluedJob(parent_dir=project.jobs_root, job_name=job_name)
+        job = SuperGlueJob(parent_dir=project.jobs_root, job_name=job_name)
 
         job.load_config()
         job.create_version()
@@ -24,7 +27,7 @@ def list_jobs_to_sync(project: GluedProject) -> List[GluedJob]:
     return jobs_to_sync
 
 
-def list_modules_to_sync(project: GluedProject) -> List[GluedModule]:
+def list_modules_to_sync(project: SuperGlueProject) -> List[GluedModule]:
 
     modules_to_sync = []
 
@@ -44,3 +47,15 @@ def list_modules_to_sync(project: GluedProject) -> List[GluedModule]:
             print(f"{module.module_name} is not up to date and is marked for deployment")
             modules_to_sync.append(module)
     return modules_to_sync
+
+
+def validate_account(func: Callable) -> Callable:
+    def wrapper(*args, **kwargs) -> Any:
+        sts = boto3.client("sts")
+        account_id = int(sts.get_caller_identity()["Account"])
+
+        if account_id != SUPERGLUE_AWS_ACCOUNT:
+            print(f"superglue expects account {SUPERGLUE_AWS_ACCOUNT} but account is {account_id}")
+            exit(1)
+        return func(*args, **kwargs)
+    return wrapper

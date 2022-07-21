@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Action, Namespace
 from typing import Any
-from superglue.core.project import GluedProject
+from superglue.core.project import SuperGlueProject
 from superglue.core.module import GluedModule
-from superglue.core.job import GluedJob
+from superglue.core.job import SuperGlueJob
 
 
 def validate_input_string(input_string: str, message: str) -> None:
@@ -15,8 +15,8 @@ def validate_input_string(input_string: str, message: str) -> None:
 
 def check_job_exists(job_name: str) -> None:
 
-    project = GluedProject()
-    job = GluedJob(project.jobs_root, job_name)
+    project = SuperGlueProject()
+    job = SuperGlueJob(project.jobs_root, job_name)
 
     if not job.job_path.exists():
         print(f"The job {job.job_name} does not exist")
@@ -25,7 +25,7 @@ def check_job_exists(job_name: str) -> None:
 
 def check_module_exists(module_name: str) -> None:
 
-    project = GluedProject()
+    project = SuperGlueProject()
     module = GluedModule(project.shared_root, module_name)
 
     if not module.module_path.exists():

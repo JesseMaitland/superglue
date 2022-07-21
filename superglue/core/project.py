@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 
 
-class GluedProject:
+class SuperGlueProject:
     def __init__(self) -> None:
         self.jobs_root = Path.cwd() / "glue_jobs"
         self.shared_root = Path.cwd() / "shared"

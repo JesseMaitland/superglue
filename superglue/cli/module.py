@@ -1,9 +1,9 @@
 from argparse import Namespace
-from superglue.core.project import GluedProject
+from superglue.core.project import SuperGlueProject
 from superglue.core.module import GluedModule
 
 
-project = GluedProject()
+project = SuperGlueProject()
 
 
 def new(cmd: Namespace) -> None:

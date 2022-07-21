@@ -5,12 +5,12 @@ import json
 from pathlib import Path
 from typing import List
 from superglue.exceptions import JobNameValidationError
-from superglue.environment.variables import GLUED_S3_BUCKET, GLUED_JOB_PREFIX, GLUED_JOB_SUFFIX
+from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_JOB_PREFIX, SUPERGLUE_JOB_SUFFIX
 from superglue.core.base_file_controller import BaseFileController
 
 
-class GluedJob(BaseFileController):
-    def __init__(self, parent_dir: Path, job_name: str, bucket: str = GLUED_S3_BUCKET) -> None:
+class SuperGlueJob(BaseFileController):
+    def __init__(self, parent_dir: Path, job_name: str, bucket: str = SUPERGLUE_S3_BUCKET) -> None:
 
         super().__init__(
             parent_dir=parent_dir,
@@ -78,14 +78,14 @@ class GluedJob(BaseFileController):
         return f"s3://{self.bucket}/{key}"
 
     def _validate_name_prefix(self) -> None:
-        if GLUED_JOB_PREFIX:
-            if not self.job_name.startswith(GLUED_JOB_PREFIX):
-                raise JobNameValidationError(f"The job name must have prefix {GLUED_JOB_PREFIX}")
+        if SUPERGLUE_JOB_PREFIX:
+            if not self.job_name.startswith(SUPERGLUE_JOB_PREFIX):
+                raise JobNameValidationError(f"The job name must have prefix {SUPERGLUE_JOB_PREFIX}")
 
     def _validate_name_suffix(self) -> None:
-        if GLUED_JOB_SUFFIX:
-            if not self.job_name.endswith(GLUED_JOB_SUFFIX):
-                raise JobNameValidationError(f"The job name must have suffix {GLUED_JOB_SUFFIX}")
+        if SUPERGLUE_JOB_SUFFIX:
+            if not self.job_name.endswith(SUPERGLUE_JOB_SUFFIX):
+                raise JobNameValidationError(f"The job name must have suffix {SUPERGLUE_JOB_SUFFIX}")
 
     def validate_name(self) -> None:
         self._validate_name_prefix()
