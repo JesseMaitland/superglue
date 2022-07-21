@@ -1,12 +1,4 @@
-import os
-from unittest.mock import patch, MagicMock
-from glued.environment.variables import GLUED_S3_BUCKET, GLUED_IAM_ROLE
-
-
-# @patch('glued.environment.variables.load_dotenv')
-# def test_load_dotenv_called(patched_load_dotenv: MagicMock) -> None:
-#     from glued.environment.variables import DEFAULT_S3_BUCKET, IAM_ROLE
-#     patched_load_dotenv.assert_called_once()
+from superglue.environment.variables import GLUED_S3_BUCKET, GLUED_IAM_ROLE, GLUED_JOB_SUFFIX, GLUED_JOB_PREFIX
 
 
 def test_default_s3_bucket() -> None:
@@ -15,3 +7,11 @@ def test_default_s3_bucket() -> None:
 
 def test_iam_role() -> None:
     assert GLUED_IAM_ROLE == "some-iam-role"
+
+
+def test_glued_prefix() -> None:
+    assert GLUED_JOB_PREFIX == "some_prefix__"
+
+
+def test_glued_suffix() -> None:
+    assert GLUED_JOB_SUFFIX == "some_suffix__"

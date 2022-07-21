@@ -1,4 +1,4 @@
-from glued.cli import parse_args
+from superglue.cli import parse_args
 from dotenv import load_dotenv
 
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 export REQ_FILE = requirements/development.txt
-export PROJECT_DIR = glued
-export PROJECT_NAME = glued
+export PROJECT_DIR = superglue
+export PROJECT_NAME = superglue
 export TEST_DIR = tests
 export EMAIL = jesse.maitland@heyjobs.de
 export USER = "Jesse Maitland"

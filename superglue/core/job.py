@@ -4,9 +4,9 @@ import botocore
 import json
 from pathlib import Path
 from typing import List
-from glued.exceptions import JobNameValidationError
-from glued.environment.variables import GLUED_S3_BUCKET, GLUED_JOB_PREFIX, GLUED_JOB_SUFFIX
-from glued.core.base_file_controller import BaseFileController
+from superglue.exceptions import JobNameValidationError
+from superglue.environment.variables import GLUED_S3_BUCKET, GLUED_JOB_PREFIX, GLUED_JOB_SUFFIX
+from superglue.core.base_file_controller import BaseFileController
 
 
 class GluedJob(BaseFileController):

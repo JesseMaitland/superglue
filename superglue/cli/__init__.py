@@ -1,9 +1,9 @@
 from argparse import ArgumentParser
-from glued.cli import job
-from glued.cli import project
-from glued.cli import module
-from glued.cli import version
-from glued.cli.validation import ValidateJobCommandName, ValidateModuleCommandName
+from superglue.cli import job
+from superglue.cli import project
+from superglue.cli import module
+from superglue.cli import version
+from superglue.cli.validation import ValidateJobCommandName, ValidateModuleCommandName
 
 
 def parse_args():

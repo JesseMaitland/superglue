@@ -5,7 +5,7 @@ from pathlib import Path
 from hashlib import md5
 from typing import List, Tuple, Dict
 from multiprocessing import Pool, cpu_count
-from glued.environment.variables import GLUED_S3_BUCKET
+from superglue.environment.variables import GLUED_S3_BUCKET
 
 
 class BaseFileController:

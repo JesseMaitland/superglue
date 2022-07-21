@@ -1,8 +1,8 @@
 import botocore
 from typing import List
-from glued.core.project import GluedProject
-from glued.core.job import GluedJob
-from glued.core.module import GluedModule
+from superglue.core.project import GluedProject
+from superglue.core.job import GluedJob
+from superglue.core.module import GluedModule
 
 
 def list_jobs_to_sync(project: GluedProject) -> List[GluedJob]:

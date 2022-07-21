@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Action, Namespace
 from typing import Any
-from glued.core.project import GluedProject
-from glued.core.module import GluedModule
-from glued.core.job import GluedJob
+from superglue.core.project import GluedProject
+from superglue.core.module import GluedModule
+from superglue.core.job import GluedJob
 
 
 def validate_input_string(input_string: str, message: str) -> None:

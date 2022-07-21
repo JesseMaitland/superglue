@@ -1,13 +1,13 @@
 from argparse import Namespace
-from glued.core.project import GluedProject
-from glued.helpers.cli import list_modules_to_sync, list_jobs_to_sync
+from superglue.core.project import GluedProject
+from superglue.helpers.cli import list_modules_to_sync, list_jobs_to_sync
 
 
 project = GluedProject()
 
 
 def init(cmd: Namespace) -> None:
-    print("initializing glued project")
+    print("initializing superglue project")
     project.create()
 
 

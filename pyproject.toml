@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "glued"
+name = "superglue"
 version = "0.2.0"
 description = ""
 readme = "README.md"
@@ -20,11 +20,11 @@ dependencies = [
 exclude = ["tests*"]
 
 [project.scripts]
-glued = "glued.__main__:main"
+superglue = "superglue.__main__:main"
 
 
 [tool.semantic_release]
-version_variable = "glued/cli/version.py:__version__"
+version_variable = "superglue/cli/version.py:__version__"
 version_toml = "pyproject.toml:project.version"
 version_pattern = "README.md:VERSION {version}"
 upload_to_pypi = false

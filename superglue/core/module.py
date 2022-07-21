@@ -1,7 +1,7 @@
 import zipfile
 from pathlib import Path
-from glued.environment.variables import GLUED_S3_BUCKET
-from glued.core.base_file_controller import BaseFileController
+from superglue.environment.variables import GLUED_S3_BUCKET
+from superglue.core.base_file_controller import BaseFileController
 
 
 class GluedModule(BaseFileController):

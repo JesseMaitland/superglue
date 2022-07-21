@@ -1,4 +1,4 @@
-# glued requirements
+# superglue requirements
 python-dotenv==0.20.0
 pyaml==21.10.1
 boto3==1.20.49

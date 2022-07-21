@@ -1,10 +1,10 @@
 from argparse import Namespace
 from jinja2 import Template
-from glued.exceptions import JobNameValidationError
-from glued.environment.variables import GLUED_IAM_ROLE, GLUED_S3_BUCKET
-from glued.core.project import GluedProject
-from glued.core.job import GluedJob
-from glued.core.templating import TemplateController
+from superglue.exceptions import JobNameValidationError
+from superglue.environment.variables import GLUED_IAM_ROLE, GLUED_S3_BUCKET
+from superglue.core.project import GluedProject
+from superglue.core.job import GluedJob
+from superglue.core.templating import TemplateController
 
 project = GluedProject()
 
