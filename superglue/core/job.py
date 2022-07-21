@@ -6,10 +6,14 @@ from pathlib import Path
 from typing import List
 from superglue.exceptions import JobNameValidationError
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_JOB_PREFIX, SUPERGLUE_JOB_SUFFIX
-from superglue.core.base_file_controller import BaseFileController
+from superglue.core.fileio import BaseFileIO
 
 
-class SuperGlueJob(BaseFileController):
+class SuperGlueJob(BaseFileIO):
+    """
+    Class represents a superglue job definition.
+    """
+
     def __init__(self, parent_dir: Path, job_name: str, bucket: str = SUPERGLUE_S3_BUCKET) -> None:
 
         super().__init__(
@@ -91,19 +95,28 @@ class SuperGlueJob(BaseFileController):
         self._validate_name_prefix()
         self._validate_name_suffix()
 
-    def create(self, config_template: str, script_template: str) -> None:
+    def create(self, iam_role: str, job_name: str, script_location: str) -> None:
 
         if not self.job_path.exists():
+
+            self._set_template_env()
+
+            script_content = self.templates.get_template("main.template.py").render()
+            config_content = self.templates.get_template("job_config.template.yml").render(
+                iam_role=iam_role,
+                job_name=job_name,
+                script_location=script_location
+            )
 
             self.job_path.mkdir(exist_ok=True)
             self.py_files_path.mkdir(exist_ok=True)
             self.jars_path.mkdir(exist_ok=True)
 
             self.config_path.touch(exist_ok=True)
-            self.config_path.write_text(config_template)
+            self.config_path.write_text(config_content)
 
             self.script_path.touch(exist_ok=True)
-            self.script_path.write_text(script_template)
+            self.script_path.write_text(script_content)
 
             self.version_file.touch(exist_ok=True)
             version_hashes = self._get_version_hashes()
