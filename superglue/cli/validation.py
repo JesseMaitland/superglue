@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Action, Namespace
 from typing import Any
 from superglue.core.project import SuperGlueProject
-from superglue.core.module import GluedModule
+from superglue.core.module import SuperGlueModule
 from superglue.core.job import SuperGlueJob
 
 
@@ -26,7 +26,7 @@ def check_job_exists(job_name: str) -> None:
 def check_module_exists(module_name: str) -> None:
 
     project = SuperGlueProject()
-    module = GluedModule(project.shared_root, module_name)
+    module = SuperGlueModule(project.shared_root, module_name)
 
     if not module.module_path.exists():
         print(f"The module {module.module_name} does not exist")

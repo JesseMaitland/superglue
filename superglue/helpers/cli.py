@@ -3,8 +3,7 @@ import botocore
 from typing import List, Callable, Any
 from superglue.core.project import SuperGlueProject
 from superglue.core.job import SuperGlueJob
-from superglue.core.module import GluedModule
-from superglue.exceptions import InvalidAccountID
+from superglue.core.module import SuperGlueModule
 from superglue.environment.variables import SUPERGLUE_AWS_ACCOUNT
 
 
@@ -27,12 +26,13 @@ def list_jobs_to_sync(project: SuperGlueProject) -> List[SuperGlueJob]:
     return jobs_to_sync
 
 
-def list_modules_to_sync(project: SuperGlueProject) -> List[GluedModule]:
+# TODO: These functions probably belong in the project class, not really as helpers.
+def list_modules_to_sync(project: SuperGlueProject) -> List[SuperGlueModule]:
 
     modules_to_sync = []
 
     for module_name in project.list_modules():
-        module = GluedModule(parent_dir=project.shared_root, module_name=module_name)
+        module = SuperGlueModule(parent_dir=project.shared_root, module_name=module_name)
 
         module.create_version()
         local_version = module.version
@@ -59,3 +59,32 @@ def validate_account(func: Callable) -> Callable:
             exit(1)
         return func(*args, **kwargs)
     return wrapper
+
+
+def list_stale_jobs(project: SuperGlueProject) -> List[SuperGlueJob]:
+    stale_jobs = []
+
+    for job_name in project.list_jobs():
+
+        job = SuperGlueJob(parent_dir=project.jobs_root, job_name=job_name)
+
+        job.load_config()
+
+        if job.version != job.get_next_version():
+            stale_jobs.append(job)
+
+    return stale_jobs
+
+
+def list_stale_modules(project: SuperGlueProject) -> List[SuperGlueModule]:
+
+    stale_modules = []
+
+    for module_name in project.list_modules():
+
+        module = SuperGlueModule(parent_dir=project.shared_root, module_name=module_name)
+
+        if module.version != module.get_next_version():
+            stale_modules.append(module)
+
+    return stale_modules

@@ -28,7 +28,11 @@ def parse_args():
     project_sync_command.set_defaults(func=project.sync)
 
     project_status_command = project_command_subparser.add_parser("status")
+    project_status_command.add_argument("--remote", "-r", action="store_true", default=False, dest="remote")
     project_status_command.set_defaults(func=project.status)
+
+    project_commit_command = project_command_subparser.add_parser("commit")
+    project_commit_command.set_defaults(func=project.commit)
 
     # job commands
     job_command = sub_parser.add_parser("job")

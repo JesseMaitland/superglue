@@ -4,7 +4,7 @@ from superglue.environment.variables import SUPERGLUE_S3_BUCKET
 from superglue.core.fileio import BaseFileIO
 
 
-class GluedModule(BaseFileIO):
+class SuperGlueModule(BaseFileIO):
     def __init__(self, parent_dir: Path, module_name: str, bucket: str = SUPERGLUE_S3_BUCKET):
         self.module_name = module_name
         self.root_module = parent_dir / module_name
@@ -12,7 +12,7 @@ class GluedModule(BaseFileIO):
         self.zip_path = self.root_module / f"{self.module_name}.zip"
         self.relative_root = Path.cwd()
 
-        super(GluedModule, self).__init__(
+        super(SuperGlueModule, self).__init__(
             parent_dir=parent_dir,
             dir_name=module_name,
             bucket_prefix="shared",

@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import json
 from io import BytesIO
 from pathlib import Path
@@ -90,13 +91,19 @@ class BaseFileIO:
         version_hashes = self._get_version_hashes()
         self._save_version(version_hashes)
 
+    def get_next_version(self) -> Dict[str, str]:
+        return self._get_version_hashes()
+
     def fetch_s3_version(self) -> Dict[str, str]:
         s3_client = boto3.client("s3")
         key = self._get_key(self.version_file)
-        with BytesIO() as buffer:
-            s3_client.download_fileobj(self.bucket, f"{self.bucket_prefix}/{key}", buffer)
-            buffer.seek(0)
-            return json.load(buffer)
+        try:
+            with BytesIO() as buffer:
+                s3_client.download_fileobj(self.bucket, f"{self.bucket_prefix}/{key}", buffer)
+                buffer.seek(0)
+                return json.load(buffer)
+        except botocore.exceptions.ClientError:
+            return {}
 
     def delete(self) -> None:
         raise NotImplementedError
