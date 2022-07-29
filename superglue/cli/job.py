@@ -27,7 +27,7 @@ def new(cmd: Namespace) -> None:
         script_location=job.s3_script_path
     )
 
-    print(f"created new glue job config with name {cmd.name}")
+    print(f"created new glue job {cmd.name}")
 
 
 @validate_account

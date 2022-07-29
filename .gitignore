@@ -215,3 +215,4 @@ dmypy.json
 cython_debug/
 playground
 logs
+makefile.sg

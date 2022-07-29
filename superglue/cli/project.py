@@ -1,7 +1,7 @@
 from argparse import Namespace
 from superglue.core.project import SuperGlueProject
 from superglue.helpers.cli import list_modules_to_sync, list_jobs_to_sync
-
+from superglue.helpers.cli import validate_account
 
 project = SuperGlueProject()
 
@@ -11,6 +11,7 @@ def init(cmd: Namespace) -> None:
     project.create()
 
 
+@validate_account
 def sync(cmd: Namespace) -> None:
     jobs_to_sync = list_jobs_to_sync(project)
 
@@ -26,6 +27,7 @@ def sync(cmd: Namespace) -> None:
         module.deploy()
 
 
+@validate_account
 def status(cmd: Namespace) -> None:
     _ = list_jobs_to_sync(project)
     _ = list_modules_to_sync(project)
