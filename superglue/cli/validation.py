@@ -1,8 +1,7 @@
 from argparse import ArgumentParser, Action, Namespace
 from typing import Any
-from superglue.core.project import SuperGlueProject
+from superglue.core.project import SuperGlueProject, SuperGlueJob
 from superglue.core.module import SuperGlueModule
-from superglue.core.job import SuperGlueJob
 
 
 def validate_input_string(input_string: str, message: str) -> None:

@@ -1,8 +1,7 @@
 import boto3
 import botocore
 from typing import List, Callable, Any
-from superglue.core.project import SuperGlueProject
-from superglue.core.job import SuperGlueJob
+from superglue.core.project import SuperGlueProject, SuperGlueJob
 from superglue.core.module import SuperGlueModule
 from superglue.environment.variables import SUPERGLUE_AWS_ACCOUNT
 

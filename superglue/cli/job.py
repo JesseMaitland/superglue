@@ -1,8 +1,7 @@
 from argparse import Namespace
 from superglue.exceptions import JobNameValidationError
 from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET
-from superglue.core.project import SuperGlueProject
-from superglue.core.job import SuperGlueJob
+from superglue.core.project import SuperGlueProject, SuperGlueJob
 from superglue.helpers.cli import validate_account
 
 
@@ -24,7 +23,8 @@ def new(cmd: Namespace) -> None:
     job.create(
         iam_role=SUPERGLUE_IAM_ROLE,
         job_name=cmd.name,
-        script_location=job.s3_script_path
+        script_location=job.s3_script_path,
+        override=cmd.override
     )
 
     print(f"created new glue job {cmd.name}")
@@ -33,15 +33,12 @@ def new(cmd: Namespace) -> None:
 @validate_account
 def deploy(cmd: Namespace) -> None:
     if cmd.name == "all":
-        for glued_job in project.list_jobs():
-            job = SuperGlueJob(parent_dir=project.jobs_root, job_name=glued_job, bucket=SUPERGLUE_S3_BUCKET)
-
-            job.load_config()
+        for job in project.list_jobs():
             job.create_version()
             job.deploy()
         exit()
 
-    if cmd.name in project.list_jobs():
+    if cmd.name in project.list_job_names():
         job = SuperGlueJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=SUPERGLUE_S3_BUCKET)
         job.load_config()
         job.create_version()
@@ -59,8 +56,21 @@ def delete(cmd: Namespace) -> None:
     job.delete()
 
 
-@validate_account
 def check(cmd: Namespace) -> None:
     job = SuperGlueJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=SUPERGLUE_S3_BUCKET)
     job.load_config()
-    job.dump_config()
+
+    if job.overrides:
+        for overridden_job in job.instantiate_overridden_jobs():
+            overridden_job.dump_config()
+    else:
+        job.dump_config()
+
+
+def show(cmd: Namespace) -> None:
+    import pprint
+    jobs = project.list_jobs_2()
+
+    for job in jobs:
+        pprint.pprint(job.config, indent=4)
+

@@ -38,6 +38,7 @@ def parse_args():
     job_command = sub_parser.add_parser("job")
     job_command_subparser = job_command.add_subparsers()
     job_command.add_argument("name", action=ValidateJobCommandName)
+    job_command.add_argument("--override", "-o", action="store_true", default=False, help="set this flag to create an overrides.yml file")
 
     # job new commands
     job_new_command = job_command_subparser.add_parser("new")
@@ -51,6 +52,9 @@ def parse_args():
 
     job_check_command = job_command_subparser.add_parser("check")
     job_check_command.set_defaults(func=job.check)
+
+    job_show_command = job_command_subparser.add_parser("show")
+    job_show_command.set_defaults(func=job.show)
 
     # module commands
     module_parser = sub_parser.add_parser("module")
