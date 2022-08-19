@@ -45,7 +45,7 @@ def status(cmd: Namespace) -> None:
         if stale_modules:
             print(f"The following modules need to be committed {stale_modules}")
 
-        # exit(1)
+        exit(1)
     else:
         print("local superglue project is fresh as a daisy!")
 
