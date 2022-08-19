@@ -1,6 +1,5 @@
 from argparse import Namespace
 from superglue.core.project import SuperGlueProject
-from superglue.helpers.cli import list_modules_to_sync, list_jobs_to_sync, list_stale_modules, list_stale_jobs
 from superglue.helpers.cli import validate_account
 
 project = SuperGlueProject()
@@ -13,13 +12,13 @@ def init(cmd: Namespace) -> None:
 
 @validate_account
 def sync(cmd: Namespace) -> None:
-    jobs_to_sync = list_jobs_to_sync(project)
+    jobs_to_sync = project.list_jobs_to_sync()
 
     for job in jobs_to_sync:
         print(f"deploying job {job.job_name}")
         job.deploy()
 
-    modules_to_sync = list_modules_to_sync(project)
+    modules_to_sync = project.list_modules_to_sync()
 
     for module in modules_to_sync:
         print(f"deploying module {module.module_name}")
@@ -29,13 +28,13 @@ def sync(cmd: Namespace) -> None:
 
 @validate_account
 def _check_remote() -> None:
-    _ = list_jobs_to_sync(project)
-    _ = list_modules_to_sync(project)
+    _ = project.list_jobs_to_sync()
+    _ = project.list_modules_to_sync()
 
 
 def status(cmd: Namespace) -> None:
-    stale_jobs = [j.job_name for j in list_stale_jobs(project)]
-    stale_modules = [m.module_name for m in list_stale_modules(project)]
+    stale_jobs = [j.job_name for j in project.list_stale_jobs()]
+    stale_modules = [m.module_name for m in project.list_stale_modules()]
 
     if stale_jobs or stale_modules:
         print("The superglue project is not up to date.")
@@ -46,7 +45,7 @@ def status(cmd: Namespace) -> None:
         if stale_modules:
             print(f"The following modules need to be committed {stale_modules}")
 
-        exit(1)
+        # exit(1)
     else:
         print("local superglue project is fresh as a daisy!")
 
@@ -57,8 +56,8 @@ def status(cmd: Namespace) -> None:
 
 def commit(cmd: Namespace) -> None:
 
-    for stale_job in list_stale_jobs(project):
+    for stale_job in project.list_stale_jobs():
         stale_job.create_version()
 
-    for stale_module in list_stale_modules(project):
+    for stale_module in project.list_stale_modules():
         stale_module.create_version()

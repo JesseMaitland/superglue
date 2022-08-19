@@ -3,57 +3,12 @@ import yaml
 import botocore
 import json
 import copy
+import zipfile
 from pathlib import Path
 from typing import List
 from superglue.exceptions import JobNameValidationError
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_JOB_PREFIX, SUPERGLUE_JOB_SUFFIX
 from superglue.core.fileio import BaseFileIO
-
-
-class SuperGlueProject:
-    """ Class represents the superglue project structure """
-
-    def __init__(self) -> None:
-        self.jobs_root = Path.cwd() / "glue_jobs"
-        self.shared_root = Path.cwd() / "shared"
-        self.notebooks = Path.cwd() / "notebooks"
-        self.makefile_template = Path(__file__).parent.parent / "templates" / "makefile"
-
-    def create(self) -> None:
-        self.jobs_root.mkdir(exist_ok=True)
-        self.shared_root.mkdir(exist_ok=True)
-        self.notebooks.mkdir(exist_ok=True)
-
-        makefile = Path.cwd() / "makefile"
-
-        if makefile.exists():
-            makefile = Path.cwd() / "makefile.sg"
-
-        if not makefile.exists():
-            content = self.makefile_template.read_text()
-            makefile.touch()
-            makefile.write_text(content)
-
-    def list_job_names(self) -> List[str]:
-        return [path.name for path in self.jobs_root.iterdir() if path.is_dir()]
-
-    def list_jobs(self) -> List['SuperGlueJob']:
-        jobs = []
-
-        for path in self.jobs_root.iterdir():
-            job = SuperGlueJob(self.jobs_root, path.name)
-            job.load_config()
-
-            if job.overrides:
-                for overridden_job in job.instantiate_overridden_jobs():
-                    jobs.append(overridden_job)
-            else:
-                jobs.append(job)
-
-        return jobs
-
-    def list_modules(self) -> List[str]:
-        return [path.name for path in self.shared_root.iterdir() if path.name != ".DS_Store"]
 
 
 class SuperGlueJob(BaseFileIO):
@@ -284,3 +239,148 @@ class SuperGlueJob(BaseFileIO):
     def deploy(self) -> None:
         self.sync()
         self.create_or_update_job()
+
+
+class SuperGlueModule(BaseFileIO):
+    def __init__(self, parent_dir: Path, module_name: str, bucket: str = SUPERGLUE_S3_BUCKET):
+        self.module_name = module_name
+        self.root_module = parent_dir / module_name
+        self.module_path = parent_dir / module_name / module_name
+        self.zip_path = self.root_module / f"{self.module_name}.zip"
+        self.relative_root = Path.cwd()
+
+        super(SuperGlueModule, self).__init__(
+            parent_dir=parent_dir,
+            dir_name=module_name,
+            bucket_prefix="shared",
+            bucket=bucket,
+        )
+
+    def create(self) -> None:
+        if not self.module_path.exists():
+            self.module_path.mkdir(parents=True, exist_ok=True)
+
+            init_py = self.module_path / "__init__.py"
+            init_py.touch(exist_ok=True)
+        else:
+            print(f"shared python module {self.module_name} already exists.")
+
+    def delete(self) -> None:
+        pass
+
+    def create_zip(self) -> None:
+        with zipfile.ZipFile(self.zip_path, mode="w") as zip_file:
+            for file in self.module_path.glob("**/*.py"):
+                content = file.read_text()
+                content = content.encode("utf-8")
+                rel_path = file.relative_to(self.root_module).as_posix()
+                zip_file.writestr(rel_path, content)
+
+
+class SuperGlueProject:
+    """ Class represents the superglue project structure """
+
+    def __init__(self) -> None:
+        self.jobs_root = Path.cwd() / "glue_jobs"
+        self.shared_root = Path.cwd() / "shared"
+        self.notebooks = Path.cwd() / "notebooks"
+        self.makefile_template = Path(__file__).parent.parent / "templates" / "makefile"
+
+    def create(self) -> None:
+        self.jobs_root.mkdir(exist_ok=True)
+        self.shared_root.mkdir(exist_ok=True)
+        self.notebooks.mkdir(exist_ok=True)
+
+        makefile = Path.cwd() / "makefile"
+
+        if makefile.exists():
+            makefile = Path.cwd() / "makefile.sg"
+
+        if not makefile.exists():
+            content = self.makefile_template.read_text()
+            makefile.touch()
+            makefile.write_text(content)
+
+    def list_job_names(self) -> List[str]:
+        return [path.name for path in self.jobs_root.iterdir() if path.is_dir()]
+
+    def list_jobs(self) -> List[SuperGlueJob]:
+        jobs = []
+
+        for path in self.jobs_root.iterdir():
+            job = SuperGlueJob(self.jobs_root, path.name)
+            job.load_config()
+
+            if job.overrides:
+                for overridden_job in job.instantiate_overridden_jobs():
+                    jobs.append(overridden_job)
+            else:
+                jobs.append(job)
+
+        return jobs
+
+    def list_modules(self) -> List[SuperGlueModule]:
+        modules = []
+
+        for path in self.shared_root.iterdir():
+            if path.name != ".DS_Store":
+                module = SuperGlueModule(self.shared_root, path.name)
+                modules.append(module)
+        return modules
+
+    def list_stale_jobs(self) -> List[SuperGlueJob]:
+        stale_jobs = []
+
+        for superglue_job in self.list_jobs():
+            if not superglue_job.overrides:
+                superglue_job.load_config()
+
+            if superglue_job.version != superglue_job.get_next_version():
+                stale_jobs.append(superglue_job)
+
+        return stale_jobs
+
+    def list_stale_modules(self) -> List[SuperGlueModule]:
+        stale_modules = []
+        for superglue_module in self.list_modules():
+
+            if superglue_module.version != superglue_module.get_next_version():
+                stale_modules.append(superglue_module)
+
+        return stale_modules
+
+    def list_jobs_to_sync(self) -> List[SuperGlueJob]:
+        jobs_to_sync = []
+
+        for job in self.list_jobs():
+            if not job.overrides:
+                job.load_config()
+                job.create_version()
+
+            local_version = job.version
+            remote_version = job.fetch_s3_version()
+
+            if local_version != remote_version:
+                print(f"{job.job_name} is not up to date and is marked for deployment")
+                jobs_to_sync.append(job)
+
+        return jobs_to_sync
+
+    def list_modules_to_sync(self) -> List[SuperGlueModule]:
+
+        modules_to_sync = []
+
+        for superglue_module in self.list_modules():
+            superglue_module.create_version()
+            local_version = superglue_module.version
+
+            try:
+                remote_version = superglue_module.fetch_s3_version()
+            except botocore.exceptions.ClientError:
+                print("no remote version found")
+                remote_version = None
+
+            if local_version != remote_version:
+                print(f"{superglue_module.module_name} is not up to date and is marked for deployment")
+                modules_to_sync.append(superglue_module)
+        return modules_to_sync
