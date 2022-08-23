@@ -1,5 +1,8 @@
 from io import StringIO
 from unittest.mock import patch, MagicMock
+
+import pytest
+
 from superglue.cli import job
 
 
@@ -18,9 +21,12 @@ def test_job_new_command(
     # set return values
     mock_cmd.name = "spam-eggs-beans"
     mock_superglue_job.return_value.s3_script_path.return_value = "some-path"
-    job.new(mock_cmd)
 
-    # assert glue project is created
+    with pytest.raises(SystemExit) as mock_exit:
+        job.new(mock_cmd)
+        assert mock_exit.called_once_with(0)
+
+        # assert glue project is created
     assert mock_glue_project.return_value.called_once()
 
     # assert superglue job created and methods called
