@@ -13,3 +13,20 @@ def validate_account(func: Callable) -> Callable:
             exit(1)
         return func(*args, **kwargs)
     return wrapper
+
+
+def yes_no_confirmation(msg: str) -> None:
+
+    while True:
+
+        selection = input(f"{msg} : Are you sure? : [y/n] -> ").lower()
+
+        if selection not in ["y", "n"]:
+            print("please make a valid selection.")
+        elif selection == "y":
+            break
+        elif selection == "n":
+            exit(0)
+        else:
+            print("Invalid selection.")
+            exit(1)

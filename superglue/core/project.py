@@ -361,7 +361,7 @@ class SuperGlueProject:
             remote_version = job.fetch_s3_version()
 
             if local_version != remote_version:
-                print(f"{job.job_name} is not up to date and is marked for deployment")
+                print(f"{job.job_name} differs from the job currently in S3.")
                 jobs_to_sync.append(job)
 
         return jobs_to_sync
@@ -381,6 +381,6 @@ class SuperGlueProject:
                 remote_version = None
 
             if local_version != remote_version:
-                print(f"{superglue_module.module_name} is not up to date and is marked for deployment")
+                print(f"{superglue_module.module_name} differs from the job currently in S3.")
                 modules_to_sync.append(superglue_module)
         return modules_to_sync

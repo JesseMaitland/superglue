@@ -1,8 +1,8 @@
 from argparse import Namespace
 from superglue.exceptions import JobNameValidationError
-from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET
+from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET, SUPERGLUE_AWS_ACCOUNT
 from superglue.core.project import SuperGlueProject, SuperGlueJob
-from superglue.helpers.cli import validate_account
+from superglue.helpers.cli import validate_account, yes_no_confirmation
 
 
 project = SuperGlueProject()
@@ -18,7 +18,7 @@ def new(cmd: Namespace) -> None:
         job.validate_name()
     except JobNameValidationError as e:
         print(e.args[0])
-        exit()
+        exit(1)
 
     job.create(
         iam_role=SUPERGLUE_IAM_ROLE,
@@ -26,32 +26,31 @@ def new(cmd: Namespace) -> None:
         script_location=job.s3_script_path,
         override=cmd.override
     )
-
     print(f"created new glue job {cmd.name}")
+    exit(0)
 
 
 @validate_account
 def deploy(cmd: Namespace) -> None:
-    if cmd.name == "all":
-        for job in project.list_jobs():
-            job.create_version()
-            job.deploy()
-        exit()
 
     if cmd.name in project.list_job_names():
         job = SuperGlueJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=SUPERGLUE_S3_BUCKET)
+        yes_no_confirmation(f"This will deploy the job {job.job_name} to account {SUPERGLUE_AWS_ACCOUNT}.")
+
         job.load_config()
         job.create_version()
         job.deploy()
-        exit()
-
-    # in all other cases, there was some kind of invalid argument value
-    print(f"Either provide a valid job name, or the 'all' keyword.{cmd.name} not found in glue_jobs directory")
+        exit(0)
+    else:
+        print(f"Provide a valid job name for deployment. {cmd.name} not found in glue_jobs directory")
+        exit(1)
 
 
 @validate_account
 def delete(cmd: Namespace) -> None:
     job = SuperGlueJob(parent_dir=project.jobs_root, job_name=cmd.name, bucket=SUPERGLUE_S3_BUCKET)
+
+    yes_no_confirmation(f"This will delete the job {job.job_name}.")
     job.load_config()
     job.delete()
 
@@ -65,12 +64,3 @@ def check(cmd: Namespace) -> None:
             overridden_job.dump_config()
     else:
         job.dump_config()
-
-
-def show(cmd: Namespace) -> None:
-    import pprint
-    jobs = project.list_jobs_2()
-
-    for job in jobs:
-        pprint.pprint(job.config, indent=4)
-

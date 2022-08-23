@@ -1,6 +1,6 @@
 from argparse import Namespace
 from superglue.core.project import SuperGlueProject, SuperGlueModule
-
+from superglue.helpers.cli import yes_no_confirmation
 
 project = SuperGlueProject()
 
@@ -13,23 +13,24 @@ def new(cmd: Namespace) -> None:
 
 def build(cmd: Namespace) -> None:
 
-    if cmd.name == "all":
-        for superglue_module in project.list_modules():
-            print(f"zipping module {superglue_module.module_name}")
-            superglue_module.create_version()
-            superglue_module.create_zip()
-        exit()
+    superglue_module = SuperGlueModule(parent_dir=project.shared_root, module_name=cmd.name)
+    yes_no_confirmation(f"This will build a zip archive for the shared superglue module {superglue_module.module_name}.")
 
-    else:
-        superglue_module = SuperGlueModule(parent_dir=project.shared_root, module_name=cmd.name)
-
-        if not superglue_module.module_path.exists():
-            print(f"Either provide a valid module name, or the 'all' keyword. {cmd.name} not found in glue shared modules")
-            exit()
-
-        print(f"zipping module {cmd.name}")
-        superglue_module.create_version()
-        superglue_module.create_zip()
-        exit()
+    print(f"zipping module {cmd.name}")
+    superglue_module.create_version()
+    superglue_module.create_zip()
+    print("success")
+    exit(0)
 
 
+def deploy(cmd: Namespace) -> None:
+
+    superglue_module = SuperGlueModule(parent_dir=project.shared_root, module_name=cmd.name)
+    yes_no_confirmation(f"This will build and deploy a zip archive for the shared superglue module {superglue_module.module_name}.")
+
+    print(f"zipping and deploying module {superglue_module.module_name}")
+    superglue_module.create_version()
+    superglue_module.create_zip()
+    superglue_module.deploy()
+    print("success")
+    exit(0)

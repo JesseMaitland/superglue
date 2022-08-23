@@ -1,3 +1,5 @@
 1. Write Tests
 2. Review Commands and determine the best operations to have
 3. Allow saving config in parameter store as dict. Need env file to set variable needed to look there?
+4. Naming prefix as env var is a bad idea as it would be globally enforced. Store the config in the parameter store?
+5. Add development mode checks for project sync command

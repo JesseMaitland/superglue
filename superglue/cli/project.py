@@ -33,6 +33,12 @@ def _check_remote() -> None:
 
 
 def status(cmd: Namespace) -> None:
+
+    if cmd.remote:
+        print("checking remote s3 state")
+        _check_remote()
+        exit(0)
+
     stale_jobs = [j.job_name for j in project.list_stale_jobs()]
     stale_modules = [m.module_name for m in project.list_stale_modules()]
 
@@ -48,10 +54,6 @@ def status(cmd: Namespace) -> None:
         exit(1)
     else:
         print("local superglue project is fresh as a daisy!")
-
-    if cmd.remote:
-        print("checking remote s3 state")
-        _check_remote()
 
 
 def commit(cmd: Namespace) -> None:
