@@ -179,8 +179,19 @@ class SuperGlueJob(BaseFileIO):
         jobs = []
         for override in self.overrides:
             job = copy.deepcopy(self)
+
+            py_files = job.config["DefaultArguments"].get("--extra-py-files")
+            jar_files = job.config["DefaultArguments"].get("--extra-jars")
+
             job.config.update(**override)
             job.job_name = job.config["Name"]
+
+            if py_files:
+                job.config["DefaultArguments"]["--extra-py-files"] = py_files
+
+            if jar_files:
+                job.config["DefaultArguments"]["--extra-jars"] = jar_files
+
             job.validate_name()
             jobs.append(job)
         return jobs

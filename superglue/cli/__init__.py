@@ -53,9 +53,6 @@ def parse_args():
     job_check_command = job_command_subparser.add_parser("check")
     job_check_command.set_defaults(func=job.check)
 
-    job_show_command = job_command_subparser.add_parser("show")
-    job_show_command.set_defaults(func=job.show)
-
     # module commands
     module_parser = sub_parser.add_parser("module")
     module_command_subparser = module_parser.add_subparsers()
