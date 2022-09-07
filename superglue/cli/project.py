@@ -11,7 +11,7 @@ def init(cmd: Namespace) -> None:
 
 
 @validate_account
-def sync(cmd: Namespace) -> None:
+def deploy(cmd: Namespace) -> None:
     jobs_to_sync = project.list_jobs_to_sync()
 
     for job in jobs_to_sync:

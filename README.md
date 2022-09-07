@@ -90,7 +90,10 @@ shared:
 
 This code will now be importable in your glue job.
 
-
+## Makefile
+After running ``superglue project init`` a `makefile` was created. This file is intended to help automate your 
+local aws development and testing environment. To see the available commands, please run
+``make help``
 
 
 

@@ -35,5 +35,5 @@ test:          ## run tests using pytest in the aws glue docker container
 		--rm --name glue_pytest amazon/aws-glue-libs:glue_libs_3.0.0_image_01 -c "python3 -m pytest -v"
 
 .PHONY: gluezip
-gluezip:	   ## download the aws glue source code to add as a reference to your project for autocomplete
+gluezip:       ## download the aws glue source code to add as a reference to your project for autocomplete
 	curl https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-3.0/python/PyGlue.zip --output PyGlue.zip

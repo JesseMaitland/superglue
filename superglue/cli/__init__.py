@@ -24,8 +24,8 @@ def parse_args():
     project_init_command = project_command_subparser.add_parser("init")
     project_init_command.set_defaults(func=project.init)
 
-    project_sync_command = project_command_subparser.add_parser("sync")
-    project_sync_command.set_defaults(func=project.sync)
+    project_sync_command = project_command_subparser.add_parser("deploy")
+    project_sync_command.set_defaults(func=project.deploy)
 
     project_status_command = project_command_subparser.add_parser("status")
     project_status_command.add_argument("--remote", "-r", action="store_true", default=False, dest="remote")
