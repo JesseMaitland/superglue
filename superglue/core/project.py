@@ -107,9 +107,7 @@ class SuperGlueJob(BaseFileIO):
 
             script_content = self.templates.get_template("main.template.py").render()
             config_content = self.templates.get_template("job_config.template.yml").render(
-                iam_role=iam_role,
-                job_name=job_name,
-                script_location=script_location
+                iam_role=iam_role, job_name=job_name, script_location=script_location
             )
 
             self.job_path.mkdir(exist_ok=True)
@@ -175,7 +173,7 @@ class SuperGlueJob(BaseFileIO):
         overrides = yaml.safe_load(self.override_file.open())
         self.overrides = overrides["overrides"]
 
-    def instantiate_overridden_jobs(self) -> List['SuperGlueJob']:
+    def instantiate_overridden_jobs(self) -> List["SuperGlueJob"]:
         jobs = []
         for override in self.overrides:
             job = copy.deepcopy(self)
@@ -289,7 +287,7 @@ class SuperGlueModule(BaseFileIO):
 
 
 class SuperGlueProject:
-    """ Class represents the superglue project structure """
+    """Class represents the superglue project structure"""
 
     def __init__(self) -> None:
         self.jobs_root = Path.cwd() / "glue_jobs"

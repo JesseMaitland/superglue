@@ -84,17 +84,17 @@ build:
 
 .PHONY: lint
 lint:
-	. venv/bin/activate && python -m black ${PROJECT_DIR} ${TEST_DIR} --check
+	black ${PROJECT_DIR} ${TEST_DIR} --check
 
 
 .PHONY: format
 format:
-	. venv/bin/activate && python -m black ${PROJECT_DIR} ${TEST_DIR}
+	black ${PROJECT_DIR} ${TEST_DIR}
 
 
 .PHONY: test
 test:
-	. venv/bin/activate && python -m pytest ${TEST_DIR} -p no:warnings -s
+	pytest ${TEST_DIR} -p no:warnings -s
 
 
 .PHONY: qa

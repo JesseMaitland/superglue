@@ -9,11 +9,7 @@ from superglue.cli import job
 @patch("sys.stdout", new_callable=StringIO)
 @patch("superglue.cli.job.SuperGlueJob")
 @patch("superglue.cli.job.SuperGlueProject")
-def test_job_new_command(
-        mock_glue_project: MagicMock,
-        mock_superglue_job: MagicMock,
-        mock_stdout: MagicMock
-) -> None:
+def test_job_new_command(mock_glue_project: MagicMock, mock_superglue_job: MagicMock, mock_stdout: MagicMock) -> None:
 
     expected_success_message = "created new glue job spam-eggs-beans"
     mock_cmd = MagicMock()
@@ -33,9 +29,7 @@ def test_job_new_command(
     assert mock_superglue_job.return_value.called_once()
     assert mock_superglue_job.validate_name.called_once()
     assert mock_superglue_job.create.called_once_with(
-        iam_role="some-iam-role",
-        job_name="spam-eggs-beans",
-        script_location="some-path"
+        iam_role="some-iam-role", job_name="spam-eggs-beans", script_location="some-path"
     )
 
     assert mock_stdout.getvalue().rstrip() == expected_success_message

@@ -21,10 +21,7 @@ def new(cmd: Namespace) -> None:
         exit(1)
 
     job.create(
-        iam_role=SUPERGLUE_IAM_ROLE,
-        job_name=cmd.name,
-        script_location=job.s3_script_path,
-        override=cmd.override
+        iam_role=SUPERGLUE_IAM_ROLE, job_name=cmd.name, script_location=job.s3_script_path, override=cmd.override
     )
     print(f"created new glue job {cmd.name}")
     exit(0)

@@ -33,4 +33,3 @@ SUPERGLUE_AWS_ACCOUNT = int(os.getenv("SUPERGLUE_AWS_ACCOUNT"))
 # keep this as we may want logging
 SUPERGLUE_LOGGER_DIR = Path(os.getenv("SUPERGLUE_LOGGER_FILE", "./logs"))
 # SUPERGLUE_LOGGER_DIR.mkdir(exist_ok=True, parents=True)
-

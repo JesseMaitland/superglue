@@ -14,7 +14,9 @@ def new(cmd: Namespace) -> None:
 def build(cmd: Namespace) -> None:
 
     superglue_module = SuperGlueModule(parent_dir=project.shared_root, module_name=cmd.name)
-    yes_no_confirmation(f"This will build a zip archive for the shared superglue module {superglue_module.module_name}.")
+    yes_no_confirmation(
+        f"This will build a zip archive for the shared superglue module {superglue_module.module_name}."
+    )
 
     print(f"zipping module {cmd.name}")
     superglue_module.create_version()
@@ -26,7 +28,9 @@ def build(cmd: Namespace) -> None:
 def deploy(cmd: Namespace) -> None:
 
     superglue_module = SuperGlueModule(parent_dir=project.shared_root, module_name=cmd.name)
-    yes_no_confirmation(f"This will build and deploy a zip archive for the shared superglue module {superglue_module.module_name}.")
+    yes_no_confirmation(
+        f"This will build and deploy a zip archive for the shared superglue module {superglue_module.module_name}."
+    )
 
     print(f"zipping and deploying module {superglue_module.module_name}")
     superglue_module.create_version()

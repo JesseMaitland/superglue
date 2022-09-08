@@ -32,7 +32,6 @@ def check_module_exists(module_name: str) -> None:
 
 
 class ValidateJobCommandName(Action):
-
     def __call__(self, parser: ArgumentParser, namespace: Namespace, values: Any, option_string: str = None):
         validate_input_string(values, f"The {values} is not allowed in job names")
 
@@ -44,7 +43,6 @@ class ValidateJobCommandName(Action):
 
 
 class ValidateModuleCommandName(Action):
-
     def __call__(self, parser: ArgumentParser, namespace: Namespace, values: Any, option_string: str = None):
 
         validate_input_string(values, f"The {values} is not allowed in job names")
