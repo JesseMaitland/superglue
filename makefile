@@ -39,6 +39,11 @@ install:
 	pip install -e .
 
 
+.PHONY: install-dev
+install-dev:
+	pip install -e ".[dev]"
+
+
 .PHONY: uninstall
 uninstall:
 	pip uninstall ${PROJECT_NAME} --yes
@@ -71,34 +76,6 @@ clean:
 build:
 	. venv/bin/activate \
 	&& python setup.py sdist bdist_wheel
-
-
-#############################################################
-#                  Commands for CI                          #
-#############################################################
-
-.PHONY: ci-install-dependencies
-ci-install-dependencies:
-	pip install --upgrade pip setuptools wheel --progress-bar off \
-	&& pip install -r ${REQ_FILE} --progress-bar off
-
-
-.PHONY: ci-configure-git
-ci-configure-git:
-	git config --global user.email "${EMAIL}" \
-	&& git config --global user.name "${USER}"
-
-
-#############################################################
-#              Commands creating links                      #
-#############################################################
-.PHONY: link
-link:
-	ln -s ${PWD}/${PROJECT_NAME}.pyz ~/bin/${PROJECT_NAME}
-
-.PHONY: unlink
-unlink:
-	rm -f ~/bin/${PROJECT_NAME}
 
 
 #############################################################
