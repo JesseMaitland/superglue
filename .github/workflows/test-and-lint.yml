@@ -1,9 +1,9 @@
-name: Python package
+name: Test and Lint Superglue
 
 on: [push]
 
 jobs:
-  build:
+  test-and-lint:
 
     runs-on: ubuntu-latest
 
@@ -22,3 +22,6 @@ jobs:
 
       - name: Run Black Linter
         run: make lint
+
+      - name: Run Pytest
+        run: make test
