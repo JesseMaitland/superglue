@@ -28,7 +28,10 @@ SUPERGLUE_JOB_PREFIX = os.getenv("SUPERGLUE_JOB_PREFIX", "")
 SUPERGLUE_JOB_SUFFIX = os.getenv("SUPERGLUE_JOB_SUFFIX", "")
 
 # For simple account validation
-SUPERGLUE_AWS_ACCOUNT = int(os.getenv("SUPERGLUE_AWS_ACCOUNT"))
+try:
+    SUPERGLUE_AWS_ACCOUNT = int(os.getenv("SUPERGLUE_AWS_ACCOUNT"))
+except TypeError:
+    SUPERGLUE_AWS_ACCOUNT = None
 
 # keep this as we may want logging
 SUPERGLUE_LOGGER_DIR = Path(os.getenv("SUPERGLUE_LOGGER_FILE", "./logs"))
