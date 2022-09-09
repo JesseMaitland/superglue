@@ -7,7 +7,7 @@ on:
 jobs:
   test-and-lint:
 
-    runs-on: macos-12ß
+    runs-on: macos-12
 
     steps:
       - uses: actions/checkout@v3
