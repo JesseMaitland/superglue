@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from pathlib import Path
 from superglue.core.project import SuperGlueProject
 
@@ -21,7 +21,8 @@ def test_notebooks_directory(project: SuperGlueProject) -> None:
     assert project.notebooks == Path.cwd() / "notebooks"
 
 
-def test_create_method(project: SuperGlueProject) -> None:
+@patch("superglue.core.project.Path")
+def test_create_method(_, project: SuperGlueProject) -> None:
     project.jobs_root = MagicMock()
     project.shared_root = MagicMock()
     project.notebooks = MagicMock()
