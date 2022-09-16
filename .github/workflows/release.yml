@@ -31,8 +31,8 @@ jobs:
 
       - name: Python Semantic Release
         run: semantic-release publish --post
-        env:
-          gh_token: ${{ secrets.GH_TOKEN }}
-          repository_username: __token__
-          repository_password: ${{ secrets.PYPI_TOKEN }}
+      env:
+        gh_token: ${{ secrets.GH_TOKEN }}
+        repository_username: __token__
+        repository_password: ${{ secrets.PYPI_TOKEN }}
 
