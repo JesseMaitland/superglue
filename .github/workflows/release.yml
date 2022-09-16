@@ -35,6 +35,9 @@ jobs:
         run: make test
 
       - name: Python Semantic Release
-        run: semantic-release publish --post
+        run: |
+          git config --global user.email "jesse.maitland@heyjobs.de"
+          git config --global user.name "Jesse Maitland"
+          semantic-release publish --post
 
 
