@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-
 env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
   REPOSITORY_USERNAME: __token__
