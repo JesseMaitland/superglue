@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.3.1 (2022-09-16)
+### Fix
+* Added validate environment function ([`3970e9e`](https://github.com/JesseMaitland/superglue/commit/3970e9e20d4f5aeeafbb507a31c9cdd182de3d8d))
+
 ## v0.3.0 (2022-09-16)
 ### Feature
 * Enable pypi upload ([`e5d3ed1`](https://github.com/JesseMaitland/superglue/commit/e5d3ed19abb5558b517ba893f17af44eda7c0dd1))
