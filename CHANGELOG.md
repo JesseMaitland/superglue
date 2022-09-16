@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.3.0 (2022-09-16)
+### Feature
+* Enable pypi upload ([`e5d3ed1`](https://github.com/JesseMaitland/superglue/commit/e5d3ed19abb5558b517ba893f17af44eda7c0dd1))
+
 ## v0.2.0 (2022-09-16)
 ### Feature
 * Initial release again ([`f4f490d`](https://github.com/JesseMaitland/superglue/commit/f4f490d3fd9a4738ac590e30cd45fe419522793e))
