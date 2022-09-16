@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.3.2 (2022-09-16)
+### Fix
+* Fixed manifest file ([`07d7481`](https://github.com/JesseMaitland/superglue/commit/07d7481a20b6da6494b6dae009c5c70adc34538c))
+
 ## v0.3.1 (2022-09-16)
 ### Fix
 * Added validate environment function ([`3970e9e`](https://github.com/JesseMaitland/superglue/commit/3970e9e20d4f5aeeafbb507a31c9cdd182de3d8d))
