@@ -17,12 +17,6 @@ else:
 SUPERGLUE_S3_BUCKET = os.getenv("SUPERGLUE_S3_BUCKET")
 SUPERGLUE_IAM_ROLE = os.getenv("SUPERGLUE_IAM_ROLE")
 
-if not SUPERGLUE_S3_BUCKET:
-    raise EnvironmentError("SUPERGLUE_S3_BUCKET not set in environment")
-
-if not SUPERGLUE_IAM_ROLE:
-    raise EnvironmentError("SUPERGLUE_IAM_ROLE not set in environment")
-
 # for name validation
 SUPERGLUE_JOB_PREFIX = os.getenv("SUPERGLUE_JOB_PREFIX", "")
 SUPERGLUE_JOB_SUFFIX = os.getenv("SUPERGLUE_JOB_SUFFIX", "")
@@ -36,3 +30,12 @@ except TypeError:
 # keep this as we may want logging
 SUPERGLUE_LOGGER_DIR = Path(os.getenv("SUPERGLUE_LOGGER_FILE", "./logs"))
 # SUPERGLUE_LOGGER_DIR.mkdir(exist_ok=True, parents=True)
+
+
+def validate_environment() -> None:
+
+    if not SUPERGLUE_S3_BUCKET:
+        raise EnvironmentError("SUPERGLUE_S3_BUCKET not set in environment")
+
+    if not SUPERGLUE_IAM_ROLE:
+        raise EnvironmentError("SUPERGLUE_IAM_ROLE not set in environment")
