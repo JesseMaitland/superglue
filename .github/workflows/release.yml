@@ -7,18 +7,32 @@ on:
       - master
 
 jobs:
-  test-and-lint:
-      uses: ./.github/workflows/test-and-lint.yml
-  tag-release:
-
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.10.x
+      - name: Set up Python 3.10.5
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10.x'
+          python-version: '3.10.5'
 
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
+
+      - name: Install Superglue and development dependencies
+        run: make install-dev
+
+      - name: Run Black Linter
+        run: make lint
+
+      - name: Run Pytest
+        run: make test
+
+      - name: Python Semantic Release
+        uses: relekang/python-semantic-release@master
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+          repository_username: __token__
+          repository_password: ${{ secrets.PYPI_TOKEN }}
+
