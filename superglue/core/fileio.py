@@ -76,7 +76,7 @@ class BaseFileIO:
             version_hashes[key] = digest
         return version_hashes
 
-    def create(self, **kwargs) -> None:
+    def save(self, **kwargs) -> None:
         raise NotImplementedError
 
     def sync(self) -> None:

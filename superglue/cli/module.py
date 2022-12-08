@@ -1,19 +1,19 @@
 from argparse import Namespace
-from superglue.core.project import SuperGlueProject, SuperGlueModule
+from superglue.core._project import SuperGlueProject, SuperGlueModule
 from superglue.helpers.cli import yes_no_confirmation
 
 project = SuperGlueProject()
 
 
 def new(cmd: Namespace) -> None:
-    module = SuperGlueModule(parent_dir=project.shared_root, module_name=cmd.name)
-    module.create()
+    module = SuperGlueModule(parent_dir=project.shared_path, module_name=cmd.name)
+    module.save()
     print(f"Created shared glue module at {module.module_path}")
 
 
 def build(cmd: Namespace) -> None:
 
-    superglue_module = SuperGlueModule(parent_dir=project.shared_root, module_name=cmd.name)
+    superglue_module = SuperGlueModule(parent_dir=project.shared_path, module_name=cmd.name)
     yes_no_confirmation(
         f"This will build a zip archive for the shared superglue module {superglue_module.module_name}."
     )
@@ -27,7 +27,7 @@ def build(cmd: Namespace) -> None:
 
 def deploy(cmd: Namespace) -> None:
 
-    superglue_module = SuperGlueModule(parent_dir=project.shared_root, module_name=cmd.name)
+    superglue_module = SuperGlueModule(parent_dir=project.shared_path, module_name=cmd.name)
     yes_no_confirmation(
         f"This will build and deploy a zip archive for the shared superglue module {superglue_module.module_name}."
     )

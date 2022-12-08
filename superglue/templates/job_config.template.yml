@@ -7,7 +7,7 @@ job_config:
     MaxConcurrentRuns: 1
   Command:
     Name: glueetl
-    ScriptLocation: {{script_location}}
+    ScriptLocation: {{s3_main_script_path}}
     PythonVersion: '3'
   # MaxRetries: 1
   # AllocatedCapacity: 123
