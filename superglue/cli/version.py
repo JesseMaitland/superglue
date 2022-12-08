@@ -10,4 +10,6 @@ __version__ = "0.3.1"
 
 
 def print_version(cmd: Namespace) -> None:
+    """ Prints the version of superglue and exits
+    """
     print(__version__)
