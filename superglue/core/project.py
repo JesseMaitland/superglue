@@ -56,7 +56,7 @@ class BaseSuperglueComponent:
 
     @property
     def s3_prefix(self) -> str:
-        return f"/superglue/{self.component_type}"
+        return f"superglue/{self.component_type}"
 
     @staticmethod
     def get_jinja_environment() -> Environment:
@@ -219,7 +219,7 @@ class SuperglueJob(BaseSuperglueComponent):
 
     @property
     def s3_main_script_path(self) -> str:
-        return f"{self.s3_prefix}/main.py"
+        return f"{self.s3_path}/main.py"
 
     @property
     def s3_py_paths(self) -> List[str]:
@@ -285,11 +285,11 @@ class SuperglueJob(BaseSuperglueComponent):
 
         except botocore.exceptions.ClientError:
             # the job does not exist, set to None to create it.
-            print(f"the job f{config['Name']} does not exist. It will be created")
+            print(f"the job {config['Name']} does not exist. It will be created")
             job_exists = None
 
         if job_exists:  # then update the job definition
-            print(f"the job f{config['Name']} exists. It will be updated")
+            print(f"the job {config['Name']} exists. It will be updated")
             # create and update glue api have different parameters for job name, so pop the name param
             # out of our config and pass it to the 'JobName' parameter of the update api.
             params = config.copy()
