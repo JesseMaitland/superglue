@@ -8,7 +8,7 @@ from pathlib import Path
 from jinja2 import Environment, PackageLoader
 from typing import List, Optional, TypeVar, Type
 from superglue.exceptions import JobNameValidationError
-from superglue.environment.config import JOBS_PATH, SHARED_PATH, NOTEBOOKS_PATH
+from superglue.environment.config import JOBS_PATH, MODULES_PATH, NOTEBOOKS_PATH
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_JOB_PREFIX, SUPERGLUE_JOB_SUFFIX, SUPERGLUE_IAM_ROLE
 from superglue.core.fileio import BaseFileIO
 
@@ -308,7 +308,7 @@ class SuperGlueProject:
 
     @property
     def shared_path(self) -> Path:
-        return SHARED_PATH
+        return MODULES_PATH
 
     @property
     def notebooks_path(self) -> Path:
