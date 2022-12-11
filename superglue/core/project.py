@@ -15,6 +15,7 @@ from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_R
 
 SuperglueJobType = TypeVar("SuperglueJobType", bound="SuperglueJob")
 SuperglueModuleType = TypeVar("SuperglueModuleType", bound="SuperglueModule")
+BaseSuperglueComponentType = TypeVar("BaseSuperglueComponentType", bound="BaseSuperglueComponent")
 
 
 class BaseSuperglueComponent:
@@ -35,6 +36,12 @@ class BaseSuperglueComponent:
         self.component_type = component_type
         self.bucket = bucket
         self.iam_role = iam_role
+
+    def __eq__(self, other: BaseSuperglueComponentType) -> bool:
+        try:
+            return self.component_name == other.component_name
+        except AttributeError:
+            return False
 
     @property
     def component_path(self) -> Path:
@@ -58,6 +65,37 @@ class BaseSuperglueComponent:
     def s3_prefix(self) -> str:
         return f"superglue/{self.component_type}"
 
+    @property
+    def s3_version_path(self) -> str:
+        return f"superglue/{self.component_type}/{self.component_name}/.version"
+
+    @property
+    def is_edited(self) -> bool:
+        return self.version != self.get_version_hashes()
+
+    @property
+    def is_deployable(self) -> bool:
+        return self.is_edited is False and self.version != self.fetch_s3_version()
+
+    @property
+    def status(self) -> Tuple[str, str]:
+        if self.is_edited:
+            return "edits in progress", "out of sync"
+
+        elif self.is_deployable:
+            return "up to date", "out of sync"
+
+        else:
+            return "up to date", "in sync"
+
+    @property
+    def pretty_table_fields(self) -> List[str]:
+        return ["Component Name", "Component Type", "Local Stats", "s3 Status"]
+
+    @property
+    def pretty_table_row(self) -> List[str]:
+        return [self.component_name, self.component_type, *self.status]
+
     @staticmethod
     def get_jinja_environment() -> Environment:
         """
@@ -69,7 +107,7 @@ class BaseSuperglueComponent:
 
     def files(self) -> List[Path]:
         file_list = []
-        filters = (".version", ".DS_Store")
+        filters = [".DS_Store"]
 
         for path in self.component_path.glob("**/*"):
             if path.is_file() and path.name not in filters:
@@ -92,8 +130,9 @@ class BaseSuperglueComponent:
     def get_version_hashes(self) -> Dict[str, str]:
         version_hashes = {}
         for path in self.files():
-            key, digest = self.hash_file(path)
-            version_hashes[key] = digest
+            if path.name != ".version":
+                key, digest = self.hash_file(path)
+                version_hashes[key] = digest
         return version_hashes
 
     def save_version_file(self) -> None:
@@ -115,7 +154,7 @@ class BaseSuperglueComponent:
         s3_client = boto3.client("s3")
         try:
             with BytesIO() as buffer:
-                s3_client.download_fileobj(self.bucket, f"{self.s3_prefix}/.version", buffer)
+                s3_client.download_fileobj(self.bucket, self.s3_version_path, buffer)
                 buffer.seek(0)
                 return json.load(buffer)
         except botocore.exceptions.ClientError:
@@ -129,6 +168,15 @@ class BaseSuperglueComponent:
 
     def save(self, **kwargs) -> None:
         raise NotImplementedError
+
+
+class SuperglueComponentList(list):
+
+    def edited(self) -> List[BaseSuperglueComponentType]:
+        return [c for c in self if c.is_edited]
+
+    def deployable(self) -> List[BaseSuperglueComponentType]:
+        return [c for c in self if c.is_deployable]
 
 
 class SuperglueJob(BaseSuperglueComponent):
@@ -459,8 +507,10 @@ class SuperglueProject:
         return SuperglueModule
 
     @property
-    def modules(self) -> List[SuperglueModule]:
-        return [self.module.get(p.name) for p in self.modules_path.iterdir()]
+    def modules(self) -> SuperglueComponentList:
+        _modules = [self.module.get(p.name) for p in self.modules_path.iterdir()]
+        _modules.sort(key=lambda x: x.module_name)
+        return SuperglueComponentList(_modules)
 
     def create(self) -> None:
         self.jobs_path.mkdir(exist_ok=True)
@@ -485,12 +535,3 @@ class SuperglueProject:
             job.deployment_config_file.open(mode="w"),
             Dumper=_NoAnchorsDumper
         )
-
-    def edited_modules(self) -> List[SuperglueModule]:
-        edited = []
-        for module in self.modules:
-            next_version = module.get_version_hashes()
-            if next_version != module.version:
-                edited.append(module)
-        return edited
-

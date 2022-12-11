@@ -1,7 +1,7 @@
 import inspect
-from typing import List
+from typing import List, Optional
 from argparse import Namespace
-from superglue.core.project import SuperglueProject
+from superglue.core.project import SuperglueProject, SuperglueModule
 from superglue.helpers.cli import validate_account
 from prettytable import PrettyTable
 # from superglue.exceptions import JobNameValidationError
@@ -34,22 +34,24 @@ class RootCommands(CommandBase):
 
     @validate_account
     def status(self) -> None:
+        table = PrettyTable()
+        table.field_names = ["component type", "name", "local_status", "remote_status", "deploy action"]
+        table.sortby = "name"
 
-        stale_jobs = [j.job_name for j in self.project.list_stale_jobs()]
-        stale_modules = [m.module_name for m in self.project.list_stale_modules()]
+        for field in table.field_names:
+            table.align[field] = "l"
 
-        if stale_jobs or stale_modules:
-            print("The superglue project is not up to date.")
+        edited_modules = self.project.edited_modules()
 
-            if stale_jobs:
-                print(f"The following jobs need to be committed {stale_jobs}")
+        for module in self.project.modules:
+            if module in edited_modules:
+                table.add_row(["module", module.module_name, "edits in progress", "out of sync", "package and upload to s3"])
+            elif module.version != module.fetch_s3_version():
+                table.add_row(["module", module.module_name, "up to date", "out of sync", "upload to s3"])
+            else:
+                table.add_row(["module", module.module_name, "up to date", "in sync", "no action"])
 
-            if stale_modules:
-                print(f"The following modules need to be committed {stale_modules}")
-
-            exit(1)
-        else:
-            print("local superglue project is fresh as a daisy!")
+        print(table)
 
     @validate_account
     def deploy(self) -> None:
@@ -116,9 +118,12 @@ class ModuleCommands(CommandBase):
 
     def commit(self) -> None:
         module = self.project.module.get(self.cmd_args.name)
-        self.package()
-        module.save_version_file()
-        print(f"committed superglue module {self.cmd_args.name}")
+        if module.is_edited:
+            self.package(module)
+            module.save_version_file()
+            print(f"Committed superglue module {self.cmd_args.name}. Ready for deployment!")
+        else:
+            print(f"Superglue module {self.cmd_args.name} has no active changes to commit")
 
     def status(self) -> None:
         table = PrettyTable()
@@ -137,14 +142,23 @@ class ModuleCommands(CommandBase):
 
         print(table)
 
-    def package(self) -> None:
-        module = self.project.module.get(self.cmd_args.name)
+    def package(self, module: Optional[SuperglueModule] = None) -> None:
+        if not module:
+            module = self.project.module.get(self.cmd_args.name)
         module.create_zip()
-        print(f"packaged glue module {self.cmd_args.name}")
+        print(f"Packaged glue module {self.cmd_args.name}")
 
     def deploy(self) -> None:
         module = self.project.module.get(self.cmd_args.name)
-        module.deploy()
-        print(f"deployed glue module {self.cmd_args.name}")
+        if module.is_deployable:
+            module.deploy()
+            print(f"deployed glue module {self.cmd_args.name}")
+        elif module.is_edited:
+            print(f"glue module {self.cmd_args.name} has in progress edits. Run superglue commit.")
+        else:
+            print(f"glue module {self.cmd_args.name} is up to date on remote!")
 
-
+    def debug(self) -> None:
+        for m in self.project.modules:
+            print(m.pretty_table_fields)
+            print(m.pretty_table_row)
