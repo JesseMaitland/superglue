@@ -21,7 +21,7 @@ def parse_args():
 
     for job_command in JobCommands.commands():
         p = job_command_subparser.add_parser(job_command)
-        p.add_argument("-n", "--name", required=True)
+        p.add_argument("-n", "--name")
         p.set_defaults(command=JobCommands, method=job_command)
 
     module_command_parser = sub_parser.add_parser("module")
@@ -29,7 +29,7 @@ def parse_args():
 
     for module_command in ModuleCommands.commands():
         p = module_command_subparser.add_parser(module_command)
-        p.add_argument("-n", "--name", required=True)
+        p.add_argument("-n", "--name")
         p.set_defaults(command=ModuleCommands, method=module_command)
 
     # job commands

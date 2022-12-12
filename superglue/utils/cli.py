@@ -1,5 +1,6 @@
 import boto3
-from typing import Callable, Any
+from typing import Callable, Any, List
+from prettytable import PrettyTable
 from superglue.environment.variables import SUPERGLUE_AWS_ACCOUNT
 
 
@@ -31,3 +32,18 @@ def yes_no_confirmation(msg: str) -> None:
         else:
             print("Invalid selection.")
             exit(1)
+
+
+def expected_cli_args(*expected_args) -> Callable:
+    def validate_args_decorator(func: Callable) -> Callable:
+        def wrapper(command, *args, **kwargs) -> Any:
+            for expected_arg in expected_args:
+                if getattr(command.cli_args, expected_arg) is None:
+                    print(f"The argument '{expected_arg}' must be provided.")
+                    exit(1)
+            return func(command, *args, **kwargs)
+        return wrapper
+    return validate_args_decorator
+
+
+

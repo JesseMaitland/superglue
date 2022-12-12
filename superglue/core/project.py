@@ -2,14 +2,14 @@ import boto3
 import botocore
 import json
 import yaml
-import copy
 import zipfile
 from io import BytesIO
 from pathlib import Path
 from hashlib import md5
+from prettytable import PrettyTable
 from multiprocessing import Pool, cpu_count
-from typing import Dict, List, Optional, Tuple, TypeVar, Type
 from jinja2 import Environment, PackageLoader
+from typing import Dict, List, Optional, Tuple, TypeVar, Type
 from superglue.environment.config import JOBS_PATH, NOTEBOOKS_PATH, MODULES_PATH
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE
 
@@ -89,10 +89,6 @@ class BaseSuperglueComponent:
             return "up to date", "in sync"
 
     @property
-    def pretty_table_fields(self) -> List[str]:
-        return ["Component Name", "Component Type", "Local Stats", "s3 Status"]
-
-    @property
     def pretty_table_row(self) -> List[str]:
         return [self.component_name, self.component_type, *self.status]
 
@@ -157,8 +153,11 @@ class BaseSuperglueComponent:
                 s3_client.download_fileobj(self.bucket, self.s3_version_path, buffer)
                 buffer.seek(0)
                 return json.load(buffer)
-        except botocore.exceptions.ClientError:
-            return {}
+        except botocore.exceptions.ClientError as e:
+            code = e.args[0].partition(":")[2].strip()
+            if code == "Not Found":
+                return {}
+            raise e
 
     def deploy(self) -> None:
         self.sync()
@@ -470,6 +469,10 @@ class SuperglueModule(BaseSuperglueComponent):
                 rel_path = file.relative_to(self.module_root_path).as_posix()
                 zip_file.writestr(rel_path, content)
 
+    def package(self) -> None:
+        self.create_zip()
+        self.save_version_file()
+
 
 class _NoAnchorsDumper(yaml.SafeDumper):
     def ignore_aliases(self, data):
@@ -512,6 +515,10 @@ class SuperglueProject:
         _modules.sort(key=lambda x: x.module_name)
         return SuperglueComponentList(_modules)
 
+    @property
+    def pretty_table_fields(self) -> List[str]:
+        return ["Component Name", "Component Type", "Local Stats", "s3 Status"]
+
     def create(self) -> None:
         self.jobs_path.mkdir(exist_ok=True)
         self.modules_path.mkdir(exist_ok=True)
@@ -535,3 +542,11 @@ class SuperglueProject:
             job.deployment_config_file.open(mode="w"),
             Dumper=_NoAnchorsDumper
         )
+
+    def get_pretty_table(self) -> PrettyTable:
+        table = PrettyTable()
+        table.field_names = self.pretty_table_fields
+        table.sortby = "Component Name"
+        for field in self.pretty_table_fields:
+            table.align[field] = "l"
+        return table

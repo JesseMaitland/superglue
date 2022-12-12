@@ -2,7 +2,7 @@ import inspect
 from typing import List, Optional
 from argparse import Namespace
 from superglue.core.project import SuperglueProject, SuperglueModule
-from superglue.helpers.cli import validate_account
+from superglue.utils.cli import validate_account, expected_cli_args
 from prettytable import PrettyTable
 # from superglue.exceptions import JobNameValidationError
 # from superglue.environment.variables import SUPERGLUE_IAM_ROLE
@@ -14,8 +14,8 @@ __version__ = "0.3.2"
 
 class CommandBase:
 
-    def __init__(self, cmd_args: Namespace) -> None:
-        self.cmd_args = cmd_args
+    def __init__(self, cli_args: Namespace) -> None:
+        self.cli_args = cli_args
         self.project = SuperglueProject()
 
     @classmethod
@@ -25,12 +25,20 @@ class CommandBase:
 
 class RootCommands(CommandBase):
 
-    def version(self) -> None:
-        print(f"superglue -- the aws glue job deployment utility -- version :: {__version__}")
+    @staticmethod
+    def version() -> None:
+        print(f"The AWS Glue Deployment Utility -- superglue version :: {__version__}")
 
     def init(self) -> None:
         self.project.create()
         print("superglue project initialized!")
+
+    def package(self) -> None:
+        for module in self.project.modules.edited():
+            module.package()
+            print(f"Superglue module {module.module_name} has been successfully packaged!")
+        else:
+            print("No changes in superglue modules found. Nothing to package.")
 
     @validate_account
     def status(self) -> None:
@@ -82,25 +90,25 @@ class JobCommands(CommandBase):
         """
         Creates a new job in the glue_jobs directory
         """
-        job = self.project.job.new(self.cmd_args.name)
+        job = self.project.job.new(self.cli_args.name)
         job.save()
-        print(f"created new glue job {self.cmd_args.name}")
+        print(f"created new glue job {self.cli_args.name}")
         exit()
 
     def commit(self) -> None:
-        job = self.project.job.get(self.cmd_args.name)
+        job = self.project.job.get(self.cli_args.name)
         job.save_version_file()
-        print(f"committed glue job {self.cmd_args.name}")
+        print(f"committed glue job {self.cli_args.name}")
         exit()
 
     def check(self) -> None:
-        job = self.project.job.get(self.cmd_args.name)
+        job = self.project.job.get(self.cli_args.name)
         modules = [self.project.module.get(module_name) for module_name in job.superglue_modules]
         job = self.project.job.render(job, modules)
         self.project.save_deployment_config(job)
 
     def deploy(self) -> None:
-        job = self.project.job.get(self.cmd_args.name)
+        job = self.project.job.get(self.cli_args.name)
         job.deploy()
         modules = [self.project.module.get(module_name) for module_name in job.superglue_modules]
         job = self.project.job.render(job, modules)
@@ -111,54 +119,33 @@ class JobCommands(CommandBase):
 
 class ModuleCommands(CommandBase):
 
+    @expected_cli_args("name")
     def new(self) -> None:
-        module = self.project.module.new(self.cmd_args.name)
+        module = self.project.module.new(self.cli_args.name)
         module.save()
-        print(f"created new superglue module {self.cmd_args.name}")
-
-    def commit(self) -> None:
-        module = self.project.module.get(self.cmd_args.name)
-        if module.is_edited:
-            self.package(module)
-            module.save_version_file()
-            print(f"Committed superglue module {self.cmd_args.name}. Ready for deployment!")
-        else:
-            print(f"Superglue module {self.cmd_args.name} has no active changes to commit")
+        print(f"created new superglue module {self.cli_args.name}")
 
     def status(self) -> None:
-        table = PrettyTable()
-        table.field_names = ["module", "local status", "remote status"]
-        module = self.project.module.get(self.cmd_args.name)
+        table = self.project.get_pretty_table()
 
-        next_version = module.get_version_hashes()
-        this_version = module.version
-        local_status = "up to date"
-        remote_status = "up to date"
-
-        if next_version != this_version:
-            local_status = "edited"
-
-        table.add_row([module.module_name, local_status, remote_status])
-
+        if self.cli_args.name:
+            module = self.project.module.get(self.cli_args.name)
+            table.add_row(module.pretty_table_row)
+        else:
+            for module in self.project.modules:
+                table.add_row(module.pretty_table_row)
         print(table)
 
-    def package(self, module: Optional[SuperglueModule] = None) -> None:
-        if not module:
-            module = self.project.module.get(self.cmd_args.name)
-        module.create_zip()
-        print(f"Packaged glue module {self.cmd_args.name}")
+    @expected_cli_args("name")
+    def package(self) -> None:
+        module = self.project.module.get(self.cli_args.name)
+        module.package()
+        print(f"Superglue module {module.module_name} has been successfully packaged!")
 
+    @expected_cli_args("name")
     def deploy(self) -> None:
-        module = self.project.module.get(self.cmd_args.name)
-        if module.is_deployable:
-            module.deploy()
-            print(f"deployed glue module {self.cmd_args.name}")
-        elif module.is_edited:
-            print(f"glue module {self.cmd_args.name} has in progress edits. Run superglue commit.")
-        else:
-            print(f"glue module {self.cmd_args.name} is up to date on remote!")
+        module = self.project.module.get(self.cli_args.name)
+        module.package()
+        module.deploy()
+        print(f"deployed glue module {self.cli_args.name}")
 
-    def debug(self) -> None:
-        for m in self.project.modules:
-            print(m.pretty_table_fields)
-            print(m.pretty_table_row)

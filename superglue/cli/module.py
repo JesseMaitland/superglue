@@ -1,6 +1,6 @@
 from argparse import Namespace
 from superglue.core._project import SuperGlueProject, SuperGlueModule
-from superglue.helpers.cli import yes_no_confirmation
+from superglue.utils.cli import yes_no_confirmation
 
 project = SuperGlueProject()
 

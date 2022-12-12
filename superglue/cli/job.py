@@ -2,7 +2,7 @@ from argparse import Namespace
 from superglue.exceptions import JobNameValidationError
 from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET, SUPERGLUE_AWS_ACCOUNT
 from superglue.core._project import SuperGlueProject, SuperGlueJob
-from superglue.helpers.cli import validate_account, yes_no_confirmation
+from superglue.utils.cli import validate_account, yes_no_confirmation
 
 
 project = SuperGlueProject()

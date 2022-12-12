@@ -7,11 +7,10 @@ def main() -> None:
     main entry point for the spam command line tool.
     """
     load_dotenv()
-    cmd_args = parse_args()
-    commands = cmd_args.command(cmd_args=cmd_args)
-    method = getattr(commands, cmd_args.method)
+    cli_args = parse_args()
+    commands = cli_args.command(cli_args=cli_args)
+    method = getattr(commands, cli_args.method)
     method()
-
 
 
 if __name__ == "__main__":
