@@ -29,35 +29,29 @@ class RootCommands(CommandBase):
     def version() -> None:
         print(f"The AWS Glue Deployment Utility -- superglue version :: {__version__}")
 
+    @validate_account
+    def account(self) -> None:
+        pass
+
     def init(self) -> None:
         self.project.create()
         print("superglue project initialized!")
 
     def package(self) -> None:
-        for module in self.project.modules.edited():
-            module.package()
-            print(f"Superglue module {module.module_name} has been successfully packaged!")
+        edited = self.project.modules.edited()
+        if edited:
+            for module in edited:
+                module.package()
+                print(f"Superglue module {module.module_name} has been successfully packaged!")
         else:
             print("No changes in superglue modules found. Nothing to package.")
 
     @validate_account
     def status(self) -> None:
-        table = PrettyTable()
-        table.field_names = ["component type", "name", "local_status", "remote_status", "deploy action"]
-        table.sortby = "name"
-
-        for field in table.field_names:
-            table.align[field] = "l"
-
-        edited_modules = self.project.edited_modules()
+        table = self.project.get_pretty_table()
 
         for module in self.project.modules:
-            if module in edited_modules:
-                table.add_row(["module", module.module_name, "edits in progress", "out of sync", "package and upload to s3"])
-            elif module.version != module.fetch_s3_version():
-                table.add_row(["module", module.module_name, "up to date", "out of sync", "upload to s3"])
-            else:
-                table.add_row(["module", module.module_name, "up to date", "in sync", "no action"])
+            table.add_row(module.pretty_table_row)
 
         print(table)
 
@@ -125,6 +119,7 @@ class ModuleCommands(CommandBase):
         module.save()
         print(f"created new superglue module {self.cli_args.name}")
 
+    @validate_account
     def status(self) -> None:
         table = self.project.get_pretty_table()
 
@@ -142,10 +137,11 @@ class ModuleCommands(CommandBase):
         module.package()
         print(f"Superglue module {module.module_name} has been successfully packaged!")
 
+    @validate_account
     @expected_cli_args("name")
     def deploy(self) -> None:
         module = self.project.module.get(self.cli_args.name)
-        module.package()
+        self.package()
         module.deploy()
         print(f"deployed glue module {self.cli_args.name}")
 

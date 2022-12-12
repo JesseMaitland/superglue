@@ -12,6 +12,7 @@ def validate_account(func: Callable) -> Callable:
         if account_id != SUPERGLUE_AWS_ACCOUNT:
             print(f"superglue expects account {SUPERGLUE_AWS_ACCOUNT} but account is {account_id}")
             exit(1)
+        print(f"\n -- Using AWS Account {SUPERGLUE_AWS_ACCOUNT} --")
         return func(*args, **kwargs)
 
     return wrapper
