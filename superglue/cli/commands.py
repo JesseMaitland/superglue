@@ -1,6 +1,7 @@
 import inspect
 from typing import List, Optional
 from argparse import Namespace
+from superglue.exceptions import DeploymentError
 from superglue.core.project import SuperglueProject, SuperglueModule
 from superglue.utils.cli import validate_account, expected_cli_args
 from prettytable import PrettyTable
@@ -42,9 +43,16 @@ class RootCommands(CommandBase):
         if edited:
             for module in edited:
                 module.package()
-                print(f"Superglue module {module.module_name} has been successfully packaged!")
         else:
             print("No changes in superglue modules found. Nothing to package.")
+
+        edited = self.project.jobs.edited()
+
+        if edited:
+            for job in edited:
+                job.package()
+        else:
+            print("No changes in superglue jobs found. Nothing to package.")
 
     @validate_account
     def status(self) -> None:
@@ -60,33 +68,39 @@ class RootCommands(CommandBase):
 
     @validate_account
     def deploy(self) -> None:
-        jobs_to_sync = self.project.list_jobs_to_sync()
+        if self.cli_args.package:
+            print("Packaging before deployment")
+            for module in self.project.modules.edited():
+                module.package()
 
-        for job in jobs_to_sync:
-            print(f"deploying job {job.job_name}")
-            job.deploy()
+            for job in self.project.jobs.edited():
+                job.package()
+        else:
+            if self.project.modules.edited() or self.project.jobs.edited():
+                print("Active edits in progress. Please run superglue package before attempting deployment")
+                exit(1)
 
-        modules_to_sync = self.project.list_modules_to_sync()
+        deployable_modules = self.project.modules.deployable()
+        if deployable_modules:
+            for module in deployable_modules:
+                module.deploy()
+        else:
+            print("All superglue modules are up to date in S3. Nothing to deploy.")
 
-        for module in modules_to_sync:
-            print(f"deploying module {module.module_name}")
-            module.create_zip()
-            module.deploy()
+        deployable_jobs = self.project.jobs.deployable()
 
-    def commit(self) -> None:
-        pass
+        if deployable_jobs:
+            for job in deployable_jobs:
+                job.deploy()
+        else:
+            print("All superglue jobs are up to date in S3. Nothing to deploy.")
 
 
 class JobCommands(CommandBase):
 
     def new(self) -> None:
-        """
-        Creates a new job in the glue_jobs directory
-        """
         job = self.project.job.new(self.cli_args.name)
         job.save()
-        print(f"created new glue job {self.cli_args.name}")
-        exit()
 
     @validate_account
     def status(self) -> None:
@@ -105,7 +119,7 @@ class JobCommands(CommandBase):
         job = self.project.job.get(self.cli_args.name)
         for module in job.modules():
             module.package()
-        job.commit()
+        job.package()
 
     @expected_cli_args("name")
     def check(self) -> None:
@@ -117,14 +131,10 @@ class JobCommands(CommandBase):
     @expected_cli_args("name")
     def deploy(self) -> None:
         job = self.project.job.get(self.cli_args.name)
-        modules = job.modules()
 
-        for module in modules:
-            if module.is_edited:
-                module.package()
+        for module in job.modules():
+            module.deploy()
 
-            if module.is_deployable:
-                module.deploy()
         job.deploy()
 
 

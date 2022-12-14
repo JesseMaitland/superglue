@@ -235,8 +235,13 @@ class SuperglueModule(BaseSuperglueComponent):
             print(f"shared python module {self.module_name} already exists.")
 
     def deploy(self) -> None:
-        self.sync()
-        print(f"deployed glue module {self.module_name}")
+        if self.is_deployable:
+            self.sync()
+            print(f"Superglue module {self.module_name} successfully deployed!")
+        elif self.is_edited:
+            print(f"Superglue module {self.module_name} has edits in progress. Please run superglue package")
+        else:
+            print(f"Superglue module {self.module_name} up to date in S3. Nothing to deploy.")
 
     def delete(self) -> None:
         pass
@@ -250,9 +255,12 @@ class SuperglueModule(BaseSuperglueComponent):
                 zip_file.writestr(rel_path, content)
 
     def package(self) -> None:
-        self.create_zip()
-        self.save_version_file()
-        print(f"Superglue module {self.module_name} has been successfully packaged!")
+        if self.is_edited:
+            self.create_zip()
+            self.save_version_file()
+            print(f"Superglue module {self.module_name} has been successfully packaged!")
+        else:
+            print(f"Superglue module {self.module_name} package is up to date!")
 
 
 class SuperglueJob(BaseSuperglueComponent):
@@ -443,11 +451,16 @@ class SuperglueJob(BaseSuperglueComponent):
         return extra_file_args
 
     def deploy(self) -> None:
-        self.render()
-        self.commit()
-        self.sync()
-        self.create_or_update()
-        print(f"Successfully deployed superglue job {self.job_name}")
+        if self.is_deployable:
+            self.render()
+            self.package()
+            self.sync()
+            self.create_or_update()
+            print(f"Successfully deployed superglue job {self.job_name}")
+        elif self.is_edited:
+            print(f"Superglue job {self.job_name} has edits in progress. Please run superglue package")
+        else:
+            print(f"Superglue job {self.job_name} up to date in S3. Nothing to deploy.")
 
     def delete(self) -> None:
         pass
@@ -484,7 +497,7 @@ class SuperglueJob(BaseSuperglueComponent):
             self.overrides_file.touch(exist_ok=True)
 
             self.save_version_file()
-
+            print(f"created new glue job {self.job_name}")
         else:
             print(f"The job {self.job_path.name} already exists.")
 
@@ -497,7 +510,9 @@ class SuperglueJob(BaseSuperglueComponent):
         )
         print(f"deployment config saved for superglue job {self.job_name}")
 
-    def commit(self) -> None:
+    def package(self) -> None:
+        self.render()
+        self.save_deployment_config()
         self.save_version_file()
         print(f"committed superglue job {self.job_name}")
 

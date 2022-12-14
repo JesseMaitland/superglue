@@ -16,6 +16,9 @@ def parse_args():
         p = sub_parser.add_parser(root_command)
         p.set_defaults(command=RootCommands, method=root_command)
 
+        if root_command == "deploy":
+            p.add_argument("-p", "--package", action="store_true", default=False)
+
     job_command_parser = sub_parser.add_parser("job")
     job_command_subparser = job_command_parser.add_subparsers()
 
