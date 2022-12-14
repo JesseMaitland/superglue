@@ -1,8 +1,9 @@
-import boto3
-import botocore
 import json
 import yaml
+import boto3
 import zipfile
+import botocore
+import operator
 from io import BytesIO
 from pathlib import Path
 from hashlib import md5
@@ -160,7 +161,7 @@ class BaseSuperglueComponent:
             raise e
 
     def deploy(self) -> None:
-        self.sync()
+        raise NotImplementedError
 
     def delete(self) -> None:
         raise NotImplementedError
@@ -176,6 +177,82 @@ class SuperglueComponentList(list):
 
     def deployable(self) -> List[BaseSuperglueComponentType]:
         return [c for c in self if c.is_deployable]
+
+
+class SuperglueModule(BaseSuperglueComponent):
+
+    def __init__(self, module_name: str):
+
+        super(SuperglueModule, self).__init__(
+            root_dir=MODULES_PATH,
+            component_name=module_name,
+            component_type="superglue_module",
+            bucket=SUPERGLUE_S3_BUCKET,
+            iam_role=SUPERGLUE_IAM_ROLE,
+
+        )
+
+    @property
+    def module_name(self) -> str:
+        return self.component_name
+
+    @property
+    def module_root_path(self) -> Path:
+        return self.root_dir / self.module_name
+
+    @property
+    def module_inner_path(self) -> Path:
+        return self.module_root_path / self.module_name
+
+    @property
+    def zipfile(self) -> Path:
+        return self.module_root_path / f"{self.module_name}.zip"
+
+    @property
+    def s3_zipfile_path(self) -> str:
+        relative_path = self.zipfile.relative_to(self.module_root_path)
+        return f"{self.s3_path}/{relative_path}"
+
+    @classmethod
+    def new(cls, module_name: str) -> SuperglueModuleType:
+        return cls(module_name)
+
+    @classmethod
+    def get(cls, module_name: str) -> SuperglueModuleType:
+        sg_module = cls(module_name)
+        if not sg_module.module_root_path.exists():
+            raise FileNotFoundError(f"No superglue module {module_name} exists.")
+        return sg_module
+
+    def save(self) -> None:
+        if not self.module_root_path.exists():
+            self.module_inner_path.mkdir(parents=True, exist_ok=True)
+
+            init_py = self.module_inner_path / "__init__.py"
+            init_py.touch(exist_ok=True)
+            self.save_version_file()
+        else:
+            print(f"shared python module {self.module_name} already exists.")
+
+    def deploy(self) -> None:
+        self.sync()
+        print(f"deployed glue module {self.module_name}")
+
+    def delete(self) -> None:
+        pass
+
+    def create_zip(self) -> None:
+        with zipfile.ZipFile(self.zipfile, mode="w") as zip_file:
+            for file in self.module_root_path.glob("**/*.py"):
+                content = file.read_text()
+                content = content.encode("utf-8")
+                rel_path = file.relative_to(self.module_root_path).as_posix()
+                zip_file.writestr(rel_path, content)
+
+    def package(self) -> None:
+        self.create_zip()
+        self.save_version_file()
+        print(f"Superglue module {self.module_name} has been successfully packaged!")
 
 
 class SuperglueJob(BaseSuperglueComponent):
@@ -297,10 +374,10 @@ class SuperglueJob(BaseSuperglueComponent):
             raise FileNotFoundError(f"Glue job with name {job_name} not found.")
         return job
 
-    @staticmethod
-    def render(job: SuperglueJobType, modules: List[SuperglueModuleType]) -> SuperglueJobType:
-        extra_file_args = job.get_extra_file_args()
-        config = job.config.copy()
+    def render(self) -> None:
+        extra_file_args = self.get_extra_file_args()
+        modules = self.modules()
+        config = self.config.copy()
 
         s3_module_paths = ",".join([module.s3_zipfile_path for module in modules])
 
@@ -313,42 +390,44 @@ class SuperglueJob(BaseSuperglueComponent):
 
         config["job_config"]["DefaultArguments"].update(**extra_file_args)
 
-        for override in job.overrides:
+        for override in self.overrides:
             config_override = config.copy()["job_config"]
             default_args = config_override["DefaultArguments"].copy()
 
             config_override.update(**override)
             config_override["DefaultArguments"].update(**default_args)
-            job.deployment_config["job_configs"].append(config_override)
-        return job
+            self.deployment_config["job_configs"].append(config_override)
 
-    @staticmethod
-    def create_or_update(config: Dict) -> None:
+    def create_or_update(self) -> None:
         glue_client = boto3.client("glue")
 
-        try:
-            # check if the glue job exists
-            job_exists = glue_client.get_job(JobName=config["Name"])
+        for config in self.deployment_config["job_configs"]:
+            try:
+                # check if the glue job exists
+                job_exists = glue_client.get_job(JobName=config["Name"])
 
-        except botocore.exceptions.ClientError:
-            # the job does not exist, set to None to create it.
-            print(f"the job {config['Name']} does not exist. It will be created")
-            job_exists = None
+            except botocore.exceptions.ClientError:
+                # the job does not exist, set to None to create it.
+                print(f"the job {config['Name']} does not exist. It will be created")
+                job_exists = None
 
-        if job_exists:  # then update the job definition
-            print(f"the job {config['Name']} exists. It will be updated")
-            # create and update glue api have different parameters for job name, so pop the name param
-            # out of our config and pass it to the 'JobName' parameter of the update api.
-            params = config.copy()
-            job_name = params.pop("Name")
+            if job_exists:  # then update the job definition
+                print(f"the job {config['Name']} exists. It will be updated")
+                # create and update glue api have different parameters for job name, so pop the name param
+                # out of our config and pass it to the 'JobName' parameter of the update api.
+                params = config.copy()
+                job_name = params.pop("Name")
 
-            # request a job update, if it fails a client exception is raised.
-            _ = glue_client.update_job(JobName=job_name, JobUpdate=params)
+                # request a job update, if it fails a client exception is raised.
+                _ = glue_client.update_job(JobName=job_name, JobUpdate=params)
 
-        else:
-            # otherwise create the job for the first time
-            # if it fails a client exception is raised.
-            _ = glue_client.create_job(**config)
+            else:
+                # otherwise create the job for the first time
+                # if it fails a client exception is raised.
+                _ = glue_client.create_job(**config)
+
+    def modules(self) -> SuperglueComponentList:
+        return SuperglueComponentList(SuperglueModule.get(n) for n in self.superglue_modules)
 
     def get_extra_file_args(self) -> Dict[str, str]:
         extra_file_args = {}
@@ -362,6 +441,13 @@ class SuperglueJob(BaseSuperglueComponent):
             extra_file_args["--extra-jars"] = s3_jar_path_str
 
         return extra_file_args
+
+    def deploy(self) -> None:
+        self.render()
+        self.commit()
+        self.sync()
+        self.create_or_update()
+        print(f"Successfully deployed superglue job {self.job_name}")
 
     def delete(self) -> None:
         pass
@@ -402,76 +488,18 @@ class SuperglueJob(BaseSuperglueComponent):
         else:
             print(f"The job {self.job_path.name} already exists.")
 
-
-class SuperglueModule(BaseSuperglueComponent):
-
-    def __init__(self, module_name: str):
-
-        super(SuperglueModule, self).__init__(
-            root_dir=MODULES_PATH,
-            component_name=module_name,
-            component_type="superglue_module",
-            bucket=SUPERGLUE_S3_BUCKET,
-            iam_role=SUPERGLUE_IAM_ROLE,
-
+    def save_deployment_config(self) -> None:
+        self.deployment_config_file.touch(exist_ok=True)
+        yaml.dump(
+            self.deployment_config,
+            self.deployment_config_file.open(mode="w"),
+            Dumper=_NoAnchorsDumper
         )
+        print(f"deployment config saved for superglue job {self.job_name}")
 
-    @property
-    def module_name(self) -> str:
-        return self.component_name
-
-    @property
-    def module_root_path(self) -> Path:
-        return self.root_dir / self.module_name
-
-    @property
-    def module_inner_path(self) -> Path:
-        return self.module_root_path / self.module_name
-
-    @property
-    def zipfile(self) -> Path:
-        return self.module_root_path / f"{self.module_name}.zip"
-
-    @property
-    def s3_zipfile_path(self) -> str:
-        relative_path = self.zipfile.relative_to(self.module_root_path)
-        return f"{self.s3_path}/{relative_path}"
-
-    @classmethod
-    def new(cls, module_name: str) -> SuperglueModuleType:
-        return cls(module_name)
-
-    @classmethod
-    def get(cls, module_name: str) -> SuperglueModuleType:
-        sg_module = cls(module_name)
-        if not sg_module.module_root_path.exists():
-            raise FileNotFoundError(f"No superglue module {module_name} exists.")
-        return sg_module
-
-    def save(self) -> None:
-        if not self.module_root_path.exists():
-            self.module_inner_path.mkdir(parents=True, exist_ok=True)
-
-            init_py = self.module_inner_path / "__init__.py"
-            init_py.touch(exist_ok=True)
-            self.save_version_file()
-        else:
-            print(f"shared python module {self.module_name} already exists.")
-
-    def delete(self) -> None:
-        pass
-
-    def create_zip(self) -> None:
-        with zipfile.ZipFile(self.zipfile, mode="w") as zip_file:
-            for file in self.module_root_path.glob("**/*.py"):
-                content = file.read_text()
-                content = content.encode("utf-8")
-                rel_path = file.relative_to(self.module_root_path).as_posix()
-                zip_file.writestr(rel_path, content)
-
-    def package(self) -> None:
-        self.create_zip()
+    def commit(self) -> None:
         self.save_version_file()
+        print(f"committed superglue job {self.job_name}")
 
 
 class _NoAnchorsDumper(yaml.SafeDumper):
@@ -502,18 +530,18 @@ class SuperglueProject:
         return SuperglueJob
 
     @property
-    def jobs(self) -> List[SuperglueJob]:
-        return [self.job.get(p.name) for p in self.jobs_path.iterdir()]
+    def jobs(self) -> SuperglueComponentList[SuperglueJob]:
+        jobs = [self.job.get(p.name) for p in self.jobs_path.iterdir()]
+        return SuperglueComponentList(jobs)
 
     @property
     def module(self) -> Type[SuperglueModule]:
         return SuperglueModule
 
     @property
-    def modules(self) -> SuperglueComponentList:
-        _modules = [self.module.get(p.name) for p in self.modules_path.iterdir()]
-        _modules.sort(key=lambda x: x.module_name)
-        return SuperglueComponentList(_modules)
+    def modules(self) -> SuperglueComponentList[SuperglueModule]:
+        modules = [self.module.get(p.name) for p in self.modules_path.iterdir()]
+        return SuperglueComponentList(modules)
 
     @property
     def pretty_table_fields(self) -> List[str]:
@@ -534,19 +562,15 @@ class SuperglueProject:
             makefile.touch()
             makefile.write_text(content)
 
-    @staticmethod
-    def save_deployment_config(job: SuperglueJob) -> None:
-        job.deployment_config_file.touch(exist_ok=True)
-        yaml.dump(
-            job.deployment_config,
-            job.deployment_config_file.open(mode="w"),
-            Dumper=_NoAnchorsDumper
-        )
+    def included_modules(self, job: SuperglueJob) -> SuperglueComponentList:
+        modules = [self.module.get(name) for name in job.superglue_modules]
+        return SuperglueComponentList(modules)
 
     def get_pretty_table(self) -> PrettyTable:
         table = PrettyTable()
         table.field_names = self.pretty_table_fields
-        table.sortby = "Component Name"
+        table.sort_key = operator.itemgetter(0, 1)
+        table.sortby = "Component Type"
         for field in self.pretty_table_fields:
             table.align[field] = "l"
         return table

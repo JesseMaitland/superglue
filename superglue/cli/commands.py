@@ -53,6 +53,9 @@ class RootCommands(CommandBase):
         for module in self.project.modules:
             table.add_row(module.pretty_table_row)
 
+        for job in self.project.jobs:
+            table.add_row(job.pretty_table_row)
+
         print(table)
 
     @validate_account
@@ -71,11 +74,7 @@ class RootCommands(CommandBase):
             module.deploy()
 
     def commit(self) -> None:
-
-        for edited_module in self.project.edited_modules():
-            edited_module.create_zip()
-            edited_module.save_version_file()
-            print(f"committed superglue module {edited_module.module_name}")
+        pass
 
 
 class JobCommands(CommandBase):
@@ -89,26 +88,44 @@ class JobCommands(CommandBase):
         print(f"created new glue job {self.cli_args.name}")
         exit()
 
-    def commit(self) -> None:
-        job = self.project.job.get(self.cli_args.name)
-        job.save_version_file()
-        print(f"committed glue job {self.cli_args.name}")
-        exit()
+    @validate_account
+    def status(self) -> None:
+        table = self.project.get_pretty_table()
 
+        if self.cli_args.name:
+            job = self.project.job.get(self.cli_args.name)
+            table.add_row(job.pretty_table_row)
+        else:
+            for job in self.project.jobs:
+                table.add_row(job.pretty_table_row)
+        print(table)
+
+    @expected_cli_args("name")
+    def package(self) -> None:
+        job = self.project.job.get(self.cli_args.name)
+        for module in job.modules():
+            module.package()
+        job.commit()
+
+    @expected_cli_args("name")
     def check(self) -> None:
         job = self.project.job.get(self.cli_args.name)
-        modules = [self.project.module.get(module_name) for module_name in job.superglue_modules]
-        job = self.project.job.render(job, modules)
-        self.project.save_deployment_config(job)
+        job.render()
+        job.save_deployment_config()
 
+    @validate_account
+    @expected_cli_args("name")
     def deploy(self) -> None:
         job = self.project.job.get(self.cli_args.name)
-        job.deploy()
-        modules = [self.project.module.get(module_name) for module_name in job.superglue_modules]
-        job = self.project.job.render(job, modules)
+        modules = job.modules()
 
-        for config in job.deployment_config["job_configs"]:
-            self.project.job.create_or_update(config)
+        for module in modules:
+            if module.is_edited:
+                module.package()
+
+            if module.is_deployable:
+                module.deploy()
+        job.deploy()
 
 
 class ModuleCommands(CommandBase):
@@ -134,14 +151,19 @@ class ModuleCommands(CommandBase):
     @expected_cli_args("name")
     def package(self) -> None:
         module = self.project.module.get(self.cli_args.name)
-        module.package()
-        print(f"Superglue module {module.module_name} has been successfully packaged!")
+        if module.is_edited:
+            module.package()
+        else:
+            print(f"Superglue module {module.module_name} is up to date. Nothing to package!")
 
     @validate_account
     @expected_cli_args("name")
     def deploy(self) -> None:
         module = self.project.module.get(self.cli_args.name)
-        self.package()
-        module.deploy()
-        print(f"deployed glue module {self.cli_args.name}")
+        if module.is_deployable:
+            module.package()
+            module.deploy()
+        else:
+            print(f"Superglue module {module.module_name} is up to date! Nothing to deploy")
+
 

@@ -1,6 +1,5 @@
 import boto3
-from typing import Callable, Any, List
-from prettytable import PrettyTable
+from typing import Callable, Any
 from superglue.environment.variables import SUPERGLUE_AWS_ACCOUNT
 
 
