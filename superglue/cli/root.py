@@ -1,11 +1,11 @@
 from superglue.cli.utils import validate_account
-from superglue.cli.command import Command
+from superglue.cli.command import SuperglueCommand
 
 
 __version__ = "0.3.2"
 
 
-class Version(Command):
+class Version(SuperglueCommand):
 
     args = {}
     help = "--> Print the current version of superglue and exit."
@@ -14,7 +14,7 @@ class Version(Command):
         print(f"The AWS Glue Deployment Utility -- superglue version :: {__version__}")
 
 
-class Account(Command):
+class Account(SuperglueCommand):
 
     help = "--> Print the AWS account number that superglue is configured to use."
 
@@ -23,7 +23,7 @@ class Account(Command):
         pass
 
 
-class Init(Command):
+class Init(SuperglueCommand):
 
     help = "--> Creates a new superglue project structure."
 
@@ -32,7 +32,7 @@ class Init(Command):
         print("superglue project initialized!")
 
 
-class Package(Command):
+class Package(SuperglueCommand):
 
     help = "--> Packages all superglue jobs and modules which have been edited since the last package was issued."
 
@@ -53,7 +53,7 @@ class Package(Command):
             print("No changes in superglue jobs found. Nothing to package.")
 
 
-class Status(Command):
+class Status(SuperglueCommand):
 
     help = "--> Prints the current status of all superglue jobs and modules."
 
@@ -70,7 +70,7 @@ class Status(Command):
         print(table)
 
 
-class Deploy(Command):
+class Deploy(SuperglueCommand):
 
     help = "--> Deploys all superglue jobs and modules which have been changed since the last issued deployment."
 

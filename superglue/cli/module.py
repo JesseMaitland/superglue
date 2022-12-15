@@ -1,4 +1,4 @@
-from superglue.cli.command import Command
+from superglue.cli.command import SuperglueCommand
 from superglue.cli.utils import get_parser_name, validate_account
 
 
@@ -10,12 +10,13 @@ class BaseArgs:
 
     args = {
         ("-n", "--name"): {
+            "required": True,
             "help": "Name of the superglue module (directory)"
         }
     }
 
 
-class New(BaseArgs, Command):
+class New(BaseArgs, SuperglueCommand):
 
     help = "--> Create a new superglue module to share across superglue jobs."
 
@@ -24,7 +25,7 @@ class New(BaseArgs, Command):
         module.save()
 
 
-class Status(Command):
+class Status(SuperglueCommand):
 
     help = "--> Print the status of all superglue modules."
 
@@ -38,7 +39,7 @@ class Status(Command):
         print(table)
 
 
-class Package(Command):
+class Package(SuperglueCommand):
 
     help = "--> Packages superglue modules which have changed since the last issued package command"
 
@@ -50,7 +51,7 @@ class Package(Command):
             print("Superglue modules are up to date. Nothing to package!")
 
 
-class Deploy(BaseArgs, Command):
+class Deploy(BaseArgs, SuperglueCommand):
 
     help = "--> Manually deploy a superglue module. Modules must first be up to date using the package command."
 

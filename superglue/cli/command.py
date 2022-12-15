@@ -1,10 +1,9 @@
-from typing import TypeVar
 from abc import ABC, abstractmethod
 from argparse import Namespace
-from superglue.core.project import SuperglueProject
+from superglue.core.components.project import SuperglueProject
 
 
-class Command(ABC):
+class SuperglueCommand(ABC):
 
     args = {}
     help = ""
@@ -20,6 +19,3 @@ class Command(ABC):
     @abstractmethod
     def __call__(self) -> None:
         pass
-
-
-CommandType = TypeVar("CommandType", bound="Command")
