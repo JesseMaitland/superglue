@@ -1,5 +1,7 @@
 import zipfile
 from pathlib import Path
+from typing import Optional
+
 from superglue.environment.config import MODULES_PATH
 from superglue.core.types import SuperglueModuleType
 from superglue.core.components.base import SuperglueComponent
@@ -62,8 +64,11 @@ class SuperglueModule(SuperglueComponent):
         else:
             print(f"shared python module {self.module_name} already exists.")
 
-    def deploy(self) -> None:
-        if self.is_deployable:
+    def deploy(self, force: Optional[bool] = False) -> None:
+        if force:
+            print(f"Forcing deployment of superglue module {self.module_name}")
+            self.sync()
+        elif self.is_deployable:
             self.sync()
             print(f"Superglue module {self.module_name} successfully deployed!")
         elif self.is_edited:
@@ -82,8 +87,12 @@ class SuperglueModule(SuperglueComponent):
                 rel_path = file.relative_to(self.module_root_path).as_posix()
                 zip_file.writestr(rel_path, content)
 
-    def package(self) -> None:
-        if self.is_edited or not self.zipfile.exists():
+    def package(self, force: Optional[bool] = False) -> None:
+        if force:
+            print(f"Forcing packaging of superglue module {self.module_name}")
+            self.create_zip()
+            self.save_version_file()
+        elif self.is_edited:
             self.create_zip()
             self.save_version_file()
             print(f"Superglue module {self.module_name} has been successfully packaged!")

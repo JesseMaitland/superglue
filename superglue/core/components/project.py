@@ -46,7 +46,7 @@ class SuperglueProject:
 
     @property
     def pretty_table_fields(self) -> List[str]:
-        return ["Component Name", "Component Type", "Local Stats", "s3 Status"]
+        return ["Component Name", "Component Type", "Local Stats", "s3 Status", "Version Number"]
 
     def create(self) -> None:
         self.jobs_path.mkdir(exist_ok=True)
@@ -73,5 +73,6 @@ class SuperglueProject:
         table.sort_key = operator.itemgetter(0, 1)
         table.sortby = "Component Type"
         for field in self.pretty_table_fields:
-            table.align[field] = "l"
+            if field != "Version Number":
+                table.align[field] = "l"
         return table

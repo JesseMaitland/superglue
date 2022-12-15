@@ -51,16 +51,24 @@ class SuperglueComponent(ABC):
         return json.load(self.version_file.open())
 
     @property
+    def version_number(self) -> int:
+        return self.version.get("version_number", 0)
+
+    @property
+    def next_version_number(self) -> int:
+        return self.version_number + 1
+
+    @property
     def s3_path(self) -> str:
-        return f"s3://{self.bucket}/superglue/{self.component_type}/{self.component_name}"
+        return f"s3://{self.bucket}/superglue/{self.component_type}/{self.component_name}/version={self.version_number}"
 
     @property
     def s3_prefix(self) -> str:
-        return f"superglue/{self.component_type}"
+        return f"superglue/{self.component_type}/{self.component_name}/version={self.version_number}"
 
     @property
     def s3_version_path(self) -> str:
-        return f"superglue/{self.component_type}/{self.component_name}/.version"
+        return f"{self.s3_prefix}/{self.component_name}/.version"
 
     @property
     def is_edited(self) -> bool:
@@ -72,6 +80,7 @@ class SuperglueComponent(ABC):
 
     @property
     def status(self) -> Tuple[str, str]:
+
         if self.is_edited:
             return "edits in progress", "out of sync"
 
@@ -83,7 +92,7 @@ class SuperglueComponent(ABC):
 
     @property
     def pretty_table_row(self) -> List[str]:
-        return [self.component_name, self.component_type, *self.status]
+        return [self.component_name, self.component_type, *self.status, self.version_number]
 
     @staticmethod
     def get_jinja_environment() -> Environment:
@@ -122,16 +131,18 @@ class SuperglueComponent(ABC):
             if path.name != ".version":
                 key, digest = self.hash_file(path)
                 version_hashes[key] = digest
+        version_hashes["version_number"] = self.version_number
         return version_hashes
 
     def save_version_file(self) -> None:
         version_hashes = self.get_version_hashes()
+        version_hashes["version_number"] = self.next_version_number
         json.dump(version_hashes, self.version_file.open(mode="w"), indent=4)
 
     def upload_object_to_s3(self, path: Path) -> None:
         s3_client = boto3.client("s3")
         relative_path = self.get_relative_path(path)
-        print(f"Uploading -- s3://{self.bucket}{self.s3_prefix}/{relative_path}")
+        print(f"Uploading -- s3://{self.bucket}/{self.s3_prefix}/{relative_path}")
         s3_client.upload_file(path.as_posix(), self.bucket, f"{self.s3_prefix}/{relative_path}")
 
     def sync(self) -> None:
