@@ -506,7 +506,7 @@ class SuperglueJob(BaseSuperglueComponent):
         yaml.dump(
             self.deployment_config,
             self.deployment_config_file.open(mode="w"),
-            Dumper=_NoAnchorsDumper
+            Dumper=NoAnchorsDumper
         )
         print(f"deployment config saved for superglue job {self.job_name}")
 
@@ -517,7 +517,7 @@ class SuperglueJob(BaseSuperglueComponent):
         print(f"committed superglue job {self.job_name}")
 
 
-class _NoAnchorsDumper(yaml.SafeDumper):
+class NoAnchorsDumper(yaml.SafeDumper):
     def ignore_aliases(self, data):
         return True
 

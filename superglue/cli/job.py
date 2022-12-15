@@ -1,63 +1,78 @@
-from argparse import Namespace
-from superglue.exceptions import JobNameValidationError
-from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET, SUPERGLUE_AWS_ACCOUNT
-from superglue.core._project import SuperGlueProject, SuperGlueJob
-from superglue.utils.cli import validate_account, yes_no_confirmation
+from superglue.cli.command import Command
+from superglue.cli.utils import validate_account, get_parser_name
 
 
-project = SuperGlueProject()
+parser_name = get_parser_name(__name__)
+cli_help = "--> Interact with superglue jobs"
 
 
-def new(cmd: Namespace) -> None:
-    """
-    Creates a new job in the glue_jobs directory
-    """
-    job = SuperGlueJob(project.jobs_path, cmd.name)
+class BaseArgs:
 
-    try:
-        job.validate_name()
-    except JobNameValidationError as e:
-        print(e.args[0])
-        exit(1)
-
-    job.save(
-        iam_role=SUPERGLUE_IAM_ROLE, job_name=cmd.name, script_location=job.s3_script_path, override=cmd.override
-    )
-    print(f"created new glue job {cmd.name}")
-    exit(0)
+    args = {
+        ("-n", "--name"): {
+            "required": True
+        }
+    }
 
 
-@validate_account
-def deploy(cmd: Namespace) -> None:
+class New(BaseArgs, Command):
 
-    if cmd.name in project.list_job_names():
-        job = SuperGlueJob(parent_dir=project.jobs_path, job_name=cmd.name, bucket=SUPERGLUE_S3_BUCKET)
-        yes_no_confirmation(f"This will deploy the job {job.job_name} to account {SUPERGLUE_AWS_ACCOUNT}.")
+    help = "--> Create a new superglue job directory."
 
-        job.load_config()
-        job.create_version()
+    def __call__(self):
+        print(self.args)
+        job = self.project.job.new(self.cli_args.name)
+        job.save()
+
+
+class Status(Command):
+
+    help = "--> Print the current status of all superglue jobs"
+
+    @validate_account
+    def __call__(self):
+        table = self.project.get_pretty_table()
+
+        for job in self.project.jobs:
+            table.add_row(job.pretty_table_row)
+
+        print(table)
+
+
+class Package(Command):
+
+    help = "--> Packages superglue jobs and dependent modules which have changed since the last issued package command"
+
+    def __call__(self) -> None:
+
+        if self.project.jobs.edited():
+            for job in self.project.jobs.edited():
+                for module in job.modules():
+                    module.package()
+                job.package()
+        else:
+            print("No changes found to superglue jobs. Nothing to package. All jobs are up to date.")
+
+
+class Build(BaseArgs, Command):
+
+    help = "--> Create or overwrite the 'deployment.yml' file for a given job."
+
+    def __call__(self) -> None:
+        job = self.project.job.get(self.cli_args.name)
+        job.render()
+        job.save_deployment_config()
+
+
+class Deploy(BaseArgs, Command):
+
+    help = "--> Manually deploy a superglue job. Jobs must first be up to date using the package command."
+
+    def __call__(self) -> None:
+        job = self.project.job.get(self.cli_args.name)
+
+        for module in job.modules():
+            module.package()
+            module.deploy()
+
         job.deploy()
-        exit(0)
-    else:
-        print(f"Provide a valid job name for deployment. {cmd.name} not found in glue_jobs directory")
-        exit(1)
-
-
-@validate_account
-def delete(cmd: Namespace) -> None:
-    job = SuperGlueJob(parent_dir=project.jobs_path, job_name=cmd.name, bucket=SUPERGLUE_S3_BUCKET)
-
-    yes_no_confirmation(f"This will delete the job {job.job_name}.")
-    job.load_config()
-    job.delete()
-
-
-def check(cmd: Namespace) -> None:
-    job = SuperGlueJob(parent_dir=project.jobs_path, job_name=cmd.name, bucket=SUPERGLUE_S3_BUCKET)
-    job.load_config()
-
-    if job.overrides:
-        for overridden_job in job.instantiate_overridden_jobs():
-            overridden_job.dump_config()
-    else:
-        job.dump_config()

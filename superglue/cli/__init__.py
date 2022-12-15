@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
-from superglue.cli import job
-from superglue.cli import module
+from superglue.cli import root, job
+from superglue.cli.utils import get_commands
 from superglue.cli.validation import ValidateJobCommandName, ValidateModuleCommandName
-from superglue.cli.commands import RootCommands, JobCommands, ModuleCommands
+#from superglue.cli.commands import RootCommands, JobCommands, ModuleCommands
+#from superglue.cli import job
 
 
 def parse_args():
@@ -12,27 +13,44 @@ def parse_args():
     sub_parser = parser.add_subparsers(dest="command")
     sub_parser.required = True
 
-    for root_command in RootCommands.commands():
-        p = sub_parser.add_parser(root_command)
-        p.set_defaults(command=RootCommands, method=root_command)
+    # set parser for all root level actions in the format
+    # superglue "action" <options>
+    for command in get_commands(root):
+        p = sub_parser.add_parser(command.method(), help=command.help)
+        for args, kwargs in command.args.items():
+            p.add_argument(*args, **kwargs)
+        p.set_defaults(command=command)
 
-        if root_command == "deploy":
-            p.add_argument("-p", "--package", action="store_true", default=False)
+    # set subparser commands
+    for commands in job, :
+        command_parser = sub_parser.add_parser(commands.parser_name, help=commands.cli_help)
+        command_subparser = command_parser.add_subparsers()
 
-    job_command_parser = sub_parser.add_parser("job")
-    job_command_subparser = job_command_parser.add_subparsers()
+        for command in get_commands(commands):
+            p = command_subparser.add_parser(command.method(), help=command.help)
+            for args, kwargs in command.args.items():
+                p.add_argument(*args, **kwargs)
+            p.set_defaults(command=command)
 
-    for job_command in JobCommands.commands():
-        p = job_command_subparser.add_parser(job_command)
-        p.add_argument("-n", "--name")
-        p.set_defaults(command=JobCommands, method=job_command)
+    # job_command_parser = sub_parser.add_parser("job")
+    # job_command_subparser = job_command_parser.add_subparsers()
+    # for command in job.commands():
+    #     p = job_command_subparser.add_parser(command.method)
+    #     for key, value in command.args.items():
+    #         p.add_argument(*key, **value)
+    #     p.set_defaults(command=command, method=command.method)
 
-    module_command_parser = sub_parser.add_parser("module")
-    module_command_subparser = module_command_parser.add_subparsers()
+    # for job_command in JobCommands.commands():
+    #     p = job_command_subparser.add_parser(job_command)
+    #     p.add_argument("-n", "--name")
+    #     p.set_defaults(command=JobCommands, method=job_command)
 
-    for module_command in ModuleCommands.commands():
-        p = module_command_subparser.add_parser(module_command)
-        p.add_argument("-n", "--name")
-        p.set_defaults(command=ModuleCommands, method=module_command)
+    # module_command_parser = sub_parser.add_parser("module")
+    # module_command_subparser = module_command_parser.add_subparsers()
+    #
+    # for module_command in ModuleCommands.commands():
+    #     p = module_command_subparser.add_parser(module_command)
+    #     p.add_argument("-n", "--name")
+    #     p.set_defaults(command=ModuleCommands, method=module_command)
 
     return parser.parse_args()
