@@ -231,6 +231,7 @@ class SuperglueModule(BaseSuperglueComponent):
             init_py = self.module_inner_path / "__init__.py"
             init_py.touch(exist_ok=True)
             self.save_version_file()
+            print(f"created new superglue module {self.module_name}")
         else:
             print(f"shared python module {self.module_name} already exists.")
 

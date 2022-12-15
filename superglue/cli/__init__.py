@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from superglue.cli import root, job
+from superglue.cli import root, job, module
 from superglue.cli.utils import get_commands
 from superglue.cli.validation import ValidateJobCommandName, ValidateModuleCommandName
 #from superglue.cli.commands import RootCommands, JobCommands, ModuleCommands
@@ -22,7 +22,7 @@ def parse_args():
         p.set_defaults(command=command)
 
     # set subparser commands
-    for commands in job, :
+    for commands in job, module:
         command_parser = sub_parser.add_parser(commands.parser_name, help=commands.cli_help)
         command_subparser = command_parser.add_subparsers()
 
