@@ -2,8 +2,9 @@ import operator
 from pathlib import Path
 from typing import List, Type
 from prettytable import PrettyTable
-from superglue.environment.config import JOBS_PATH, MODULES_PATH, NOTEBOOKS_PATH
+from superglue.environment.config import JOBS_PATH, MODULES_PATH, NOTEBOOKS_PATH, TOOLS_PATH
 from superglue.core.components.component_list import SuperglueComponentList
+from superglue.core.components.makefile import SuperglueMakefile
 from superglue.core.components.module import SuperglueModule
 from superglue.core.components.job import SuperglueJob
 
@@ -12,7 +13,7 @@ class SuperglueProject:
     """Class represents the superglue project structure"""
 
     def __init__(self) -> None:
-        self.makefile_template = Path(__file__).parent.parent / "templates" / "makefile"
+        self.makefile_template = Path(__file__).parent / "templates" / "makefile"
 
     @property
     def jobs_path(self) -> Path:
@@ -25,6 +26,19 @@ class SuperglueProject:
     @property
     def notebooks_path(self) -> Path:
         return NOTEBOOKS_PATH
+
+    @property
+    def tools_path(self) -> Path:
+        return TOOLS_PATH
+
+    @property
+    def project_dirs(self) -> List[Path]:
+        return [
+            self.jobs_path,
+            self.modules_path,
+            self.notebooks_path,
+            self.tools_path
+        ]
 
     @property
     def job(self) -> Type[SuperglueJob]:
@@ -45,27 +59,20 @@ class SuperglueProject:
         return SuperglueComponentList(modules)
 
     @property
+    def makefile(self) -> Type[SuperglueMakefile]:
+        return SuperglueMakefile
+
+    @property
     def pretty_table_fields(self) -> List[str]:
         return ["Component Name", "Component Type", "Local Stats", "s3 Status", "Version Number"]
 
     def create(self) -> None:
-        self.jobs_path.mkdir(exist_ok=True)
-        self.modules_path.mkdir(exist_ok=True)
-        self.notebooks_path.mkdir(exist_ok=True)
+        for project_dir in self.project_dirs:
+            project_dir.mkdir(exist_ok=True)
+            project_dir.joinpath(".empty").touch()
 
-        makefile = Path.cwd() / "makefile"
-
-        if makefile.exists():
-            makefile = Path.cwd() / "makefile.sg"
-
-        if not makefile.exists():
-            content = self.makefile_template.read_text()
-            makefile.touch()
-            makefile.write_text(content)
-
-    def included_modules(self, job: SuperglueJob) -> SuperglueComponentList:
-        modules = [self.module.get(name) for name in job.superglue_modules]
-        return SuperglueComponentList(modules)
+        makefile = self.makefile.new()
+        makefile.save()
 
     def get_pretty_table(self) -> PrettyTable:
         table = PrettyTable()

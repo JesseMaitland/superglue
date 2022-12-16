@@ -218,4 +218,5 @@ logs
 makefile.sg
 glue_jobs
 glue_modules
-notebooks
+glue_notebooks
+glue_tools
