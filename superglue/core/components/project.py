@@ -7,6 +7,7 @@ from superglue.core.components.component_list import SuperglueComponentList
 from superglue.core.components.makefile import SuperglueMakefile
 from superglue.core.components.module import SuperglueModule
 from superglue.core.components.job import SuperglueJob
+from superglue.core.components.tests import SuperglueTests
 
 
 class SuperglueProject:
@@ -60,6 +61,10 @@ class SuperglueProject:
         return SuperglueMakefile
 
     @property
+    def tests(self) -> Type[SuperglueTests]:
+        return SuperglueTests
+
+    @property
     def pretty_table_fields(self) -> List[str]:
         return ["Component Name", "Component Type", "Local Stats", "s3 Status", "Version Number"]
 
@@ -70,6 +75,9 @@ class SuperglueProject:
 
         makefile = self.makefile.new()
         makefile.save()
+
+        tests = self.tests.new()
+        tests.save()
 
     def get_pretty_table(self) -> PrettyTable:
         table = PrettyTable()

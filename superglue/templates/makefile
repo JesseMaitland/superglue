@@ -1,4 +1,5 @@
 
+export WORKSPACE_LOCATION = $PWD
 
 .PHONY: help
 help:          ## Show help messages and exit.
@@ -12,7 +13,7 @@ pull:          ## pull the aws glue docker image from docker hub
 .PHONY: jupyter
 jupyter:       ## run a jupyter notebook server in the aws glue docker container
 	docker run -it -v ~/.aws:/home/glue_user/.aws \
-		-v ${JUPYTER_WORKSPACE_LOCATION}:/home/glue_user/workspace/jupyter_workspace/ \
+		-v ${WORKSPACE_LOCATION}:/home/glue_user/workspace/jupyter_workspace/ \
 		-e AWS_REGION=eu-central-1 \
 		-e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 		-e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
@@ -26,14 +27,21 @@ jupyter:       ## run a jupyter notebook server in the aws glue docker container
 .PHONY: test
 test:          ## run tests using pytest in the aws glue docker container
 	docker run -it -v ~/.aws:/home/glue_user/.aws \
-		-v ${JUPYTER_WORKSPACE_LOCATION}:/home/glue_user/workspace/ \
+		-v ${WORKSPACE_LOCATION}:/home/glue_user/workspace/ \
 		-e AWS_PROFILE=${PROFILE_NAME} \
 		-e WORKSPACE_LOCATION=${WORKSPACE_LOCATION} \
-		-e SCRIPT_FILE_NAME=${SCRIPT_FILE_NAME} \
-		-e UNIT_TEST_FILE_NAME=${UNIT_TEST_FILE_NAME} \
 		-e DISABLE_SSL="true" \
-		--rm --name glue_pytest amazon/aws-glue-libs:glue_libs_3.0.0_image_01 -c "python3 -m pytest -v"
+		--rm --name glue_pytest amazon/aws-glue-libs:glue_libs_3.0.0_image_01 -c "python3 -m pytest tests -v"
+
+.PHONY: bash
+bash:          ## get a bash prompt in the glue container
+	docker run -it -v ~/.aws:/home/glue_user/.aws \
+		-v ${WORKSPACE_LOCATION}:/home/glue_user/workspace/ \
+		-e AWS_PROFILE=${PROFILE_NAME} \
+		-e WORKSPACE_LOCATION=${WORKSPACE_LOCATION} \
+		-e DISABLE_SSL="true" \
+		--rm --name glue_pytest amazon/aws-glue-libs:glue_libs_3.0.0_image_01 -c "/bin/bash"
 
 .PHONY: gluezip
 gluezip:       ## download the aws glue source code to add as a reference to your project for autocomplete
-	curl https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-3.0/python/PyGlue.zip --output PyGlue.zip
+	curl https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-3.0/python/PyGlue.zip --output glue_tools/pyglue.zip

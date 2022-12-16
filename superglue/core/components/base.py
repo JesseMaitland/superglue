@@ -48,7 +48,7 @@ class SuperglueComponent(ABC):
     @property
     def version(self) -> Dict:
         if not self.version_file.exists():
-            self.save_version_file()
+            self.save_version_file(increment_version=False)
         return json.load(self.version_file.open())
 
     @property
@@ -134,12 +134,16 @@ class SuperglueComponent(ABC):
             if path.name != ".version":
                 key, digest = self.hash_file(path)
                 version_hashes[key] = digest
-        version_hashes["version_number"] = self.version_number
         return version_hashes
 
-    def save_version_file(self) -> None:
+    def save_version_file(self, increment_version: Optional[bool] = True) -> None:
         version_hashes = self.get_version_hashes()
-        version_hashes["version_number"] = self.next_version_number
+
+        if increment_version:
+            version_hashes["version_number"] = self.next_version_number
+        else:
+            version_hashes["version_number"] = 0
+
         json.dump(version_hashes, self.version_file.open(mode="w"), indent=4)
 
     def upload_object_to_s3(self, path: Path) -> None:
