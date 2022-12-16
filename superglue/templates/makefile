@@ -44,4 +44,4 @@ bash:          ## get a bash prompt in the glue container
 
 .PHONY: gluezip
 gluezip:       ## download the aws glue source code to add as a reference to your project for autocomplete
-	curl https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-3.0/python/PyGlue.zip --output glue_tools/pyglue.zip
+	curl https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-3.0/python/PyGlue.zip --output tools/pyglue.zip
