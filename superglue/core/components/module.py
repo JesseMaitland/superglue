@@ -10,15 +10,16 @@ from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_R
 
 class SuperglueModule(SuperglueComponent):
 
-    def __init__(self, module_name: str):
+    def __init__(self, module_name: str, *args, **kwargs):
 
         super(SuperglueModule, self).__init__(
+            *args,
             root_dir=MODULES_PATH,
             component_name=module_name,
             component_type="superglue_module",
             bucket=SUPERGLUE_S3_BUCKET,
             iam_role=SUPERGLUE_IAM_ROLE,
-
+            **kwargs
         )
 
     @property
@@ -49,6 +50,13 @@ class SuperglueModule(SuperglueComponent):
     @classmethod
     def get(cls, module_name: str) -> SuperglueModuleType:
         sg_module = cls(module_name)
+        if not sg_module.module_root_path.exists():
+            raise FileNotFoundError(f"No superglue module {module_name} exists.")
+        return sg_module
+
+    @classmethod
+    def from_version(cls, module_name: str, version_number: int) -> SuperglueModuleType:
+        sg_module = cls(module_name=module_name, version_number=version_number)
         if not sg_module.module_root_path.exists():
             raise FileNotFoundError(f"No superglue module {module_name} exists.")
         return sg_module
@@ -88,6 +96,7 @@ class SuperglueModule(SuperglueComponent):
                 zip_file.writestr(rel_path, content)
 
     def package(self, force: Optional[bool] = False) -> None:
+
         if force:
             print(f"Forcing packaging of superglue module {self.module_name}")
             self.create_zip()

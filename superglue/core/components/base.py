@@ -19,7 +19,7 @@ class SuperglueComponent(ABC):
             root_dir: Path,
             component_name: str,
             component_type: str,
-
+            version_number: Optional[int] = None,
             bucket: Optional[str] = SUPERGLUE_S3_BUCKET,
             iam_role: Optional[str] = SUPERGLUE_IAM_ROLE
     ) -> None:
@@ -29,6 +29,7 @@ class SuperglueComponent(ABC):
         self.component_type = component_type
         self.bucket = bucket
         self.iam_role = iam_role
+        self._version_number = version_number
 
     def __eq__(self, other: SuperglueComponentType) -> bool:
         try:
@@ -46,12 +47,19 @@ class SuperglueComponent(ABC):
 
     @property
     def version(self) -> Dict:
-        if not self.version_file.exists():
-            self.save_version_file()
-        return json.load(self.version_file.open())
+        try:
+            return json.load(self.version_file.open())
+        except FileNotFoundError:
+            print(f"no version file found for {self.component_type} {self.component_name}")
+            exit(1)
+        except json.decoder.JSONDecodeError:
+            print(f"version file for {self.component_type} {self.component_name} empty. Please generate a new one.")
+            exit(1)
 
     @property
     def version_number(self) -> int:
+        if self._version_number:
+            return self._version_number
         return self.version.get("version_number", 0)
 
     @property
@@ -103,7 +111,7 @@ class SuperglueComponent(ABC):
         loader = PackageLoader(package_name="superglue", package_path="templates")
         return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
 
-    def files(self) -> List[Path]:
+    def component_files(self) -> List[Path]:
         file_list = []
         filters = [".DS_Store"]
 
@@ -127,7 +135,7 @@ class SuperglueComponent(ABC):
 
     def get_version_hashes(self) -> Dict[str, str]:
         version_hashes = {}
-        for path in self.files():
+        for path in self.component_files():
             if path.name != ".version":
                 key, digest = self.hash_file(path)
                 version_hashes[key] = digest
@@ -147,7 +155,7 @@ class SuperglueComponent(ABC):
 
     def sync(self) -> None:
         with Pool(cpu_count()) as pool:
-            files = self.files()
+            files = self.component_files()
             pool.map(self.upload_object_to_s3, files)
 
     def fetch_s3_version(self) -> Dict[str, str]:

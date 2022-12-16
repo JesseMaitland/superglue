@@ -77,8 +77,8 @@ class SuperglueJob(SuperglueComponent):
         return self.job_path / "deployment.yml"
 
     @property
-    def superglue_modules(self) -> List[str]:
-        return self.config.get("superglue_modules", [])
+    def superglue_modules(self) -> Dict[str, str]:
+        return self.config.get("superglue_modules", {})
 
     @property
     def overrides(self) -> List[Dict]:
@@ -154,6 +154,7 @@ class SuperglueJob(SuperglueComponent):
                 extra_file_args["--extra-py-files"] = s3_module_paths
 
         config["job_config"]["DefaultArguments"].update(**extra_file_args)
+        config["job_config"]["Command"]["ScriptLocation"] = self.s3_main_script_path
 
         if self.overrides:
             print(f"Overrides found for superglue job {self.job_name}")
@@ -197,7 +198,11 @@ class SuperglueJob(SuperglueComponent):
                 _ = glue_client.create_job(**config)
 
     def modules(self) -> SuperglueComponentList:
-        return SuperglueComponentList(SuperglueModule.get(n) for n in self.superglue_modules)
+        component_list = SuperglueComponentList()
+        for name, meta in self.superglue_modules.items():
+            module = SuperglueModule.from_version(module_name=name, version_number=int(meta["version_number"]))
+            component_list.append(module)
+        return component_list
 
     def get_extra_file_args(self) -> Dict[str, str]:
         extra_file_args = {}

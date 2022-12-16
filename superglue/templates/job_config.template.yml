@@ -44,3 +44,8 @@ job_config:
 #    NotificationProperty:
 #        NotifyDelayAfter: 123
 #
+
+# superglue modules can be included in your project as shown below
+# superglue_modules:
+#   module_name:
+#     version: 1
