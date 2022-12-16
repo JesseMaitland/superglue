@@ -17,10 +17,6 @@ else:
 SUPERGLUE_S3_BUCKET = os.getenv("SUPERGLUE_S3_BUCKET")
 SUPERGLUE_IAM_ROLE = os.getenv("SUPERGLUE_IAM_ROLE")
 
-# for name validation
-SUPERGLUE_JOB_PREFIX = os.getenv("SUPERGLUE_JOB_PREFIX", "")
-SUPERGLUE_JOB_SUFFIX = os.getenv("SUPERGLUE_JOB_SUFFIX", "")
-
 # For simple account validation
 try:
     SUPERGLUE_AWS_ACCOUNT = int(os.getenv("SUPERGLUE_AWS_ACCOUNT"))
@@ -29,7 +25,6 @@ except TypeError:
 
 # keep this as we may want logging
 SUPERGLUE_LOGGER_DIR = Path(os.getenv("SUPERGLUE_LOGGER_FILE", "./logs"))
-# SUPERGLUE_LOGGER_DIR.mkdir(exist_ok=True, parents=True)
 
 
 def validate_environment() -> None:

@@ -12,9 +12,6 @@ from superglue.core.components.job import SuperglueJob
 class SuperglueProject:
     """Class represents the superglue project structure"""
 
-    def __init__(self) -> None:
-        self.makefile_template = Path(__file__).parent / "templates" / "makefile"
-
     @property
     def jobs_path(self) -> Path:
         return JOBS_PATH

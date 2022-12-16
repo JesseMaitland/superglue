@@ -1,12 +1,11 @@
 import pytest
-from pathlib import Path
 from prettytable import PrettyTable
 from unittest.mock import MagicMock, patch
 from superglue.core.components.project import SuperglueProject
 from superglue.core.components.job import SuperglueJob
 from superglue.core.components.module import SuperglueModule
 from superglue.core.components.component_list import SuperglueComponentList
-from superglue.environment.config import JOBS_PATH, MODULES_PATH, NOTEBOOKS_PATH
+from superglue.environment.config import JOBS_PATH, MODULES_PATH, NOTEBOOKS_PATH, TOOLS_PATH
 
 
 EXPECTED_PRETTY_TABLE_FIELDS = ["Component Name", "Component Type", "Local Stats", "s3 Status", "Version Number"]
@@ -15,18 +14,6 @@ EXPECTED_PRETTY_TABLE_FIELDS = ["Component Name", "Component Type", "Local Stats
 @pytest.fixture(scope="module")
 def project() -> SuperglueProject:
     return SuperglueProject()
-
-
-def test_jobs_root_directory(project: SuperglueProject) -> None:
-    assert project.jobs_path == Path.cwd() / "glue_jobs"
-
-
-def test_shared_root_directory(project: SuperglueProject) -> None:
-    assert project.modules_path == Path.cwd() / "glue_modules"
-
-
-def test_notebooks_directory(project: SuperglueProject) -> None:
-    assert project.notebooks_path == Path.cwd() / "notebooks"
 
 
 def test_jobs_path_property(project: SuperglueProject) -> None:
@@ -39,6 +26,10 @@ def test_modules_path_property(project: SuperglueProject) -> None:
 
 def test_notebooks_path_property(project: SuperglueProject) -> None:
     assert project.notebooks_path == NOTEBOOKS_PATH
+
+
+def test_tools_path_property(project: SuperglueProject) -> None:
+    assert project.tools_path == TOOLS_PATH
 
 
 def test_job_property(project: SuperglueProject) -> None:
@@ -107,7 +98,3 @@ def test_pretty_table(project: SuperglueProject) -> None:
 
     assert isinstance(table, PrettyTable)
 
-
-def test_makefile_template_path(project: SuperglueProject) -> None:
-    template_path = "/superglue/core/"
-    print(project.makefile_template.as_posix())
