@@ -47,14 +47,9 @@ class SuperglueComponent(ABC):
 
     @property
     def version(self) -> Dict:
-        try:
-            return json.load(self.version_file.open())
-        except FileNotFoundError:
-            print(f"no version file found for {self.component_type} {self.component_name}")
-            exit(1)
-        except json.decoder.JSONDecodeError:
-            print(f"version file for {self.component_type} {self.component_name} empty. Please generate a new one.")
-            exit(1)
+        if not self.version_file.exists():
+            self.save_version_file()
+        return json.load(self.version_file.open())
 
     @property
     def version_number(self) -> int:
