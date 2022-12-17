@@ -14,6 +14,10 @@ class SuperglueMakefile(SuperglueComponent):
         )
 
     @property
+    def root_makefile(self) -> Path:
+        return Path.cwd() / "makefile"
+
+    @property
     def makefile_path(self) -> Path:
         return TOOLS_PATH / "makefile"
 
@@ -35,3 +39,6 @@ class SuperglueMakefile(SuperglueComponent):
 
         self.makefile_path.touch(exist_ok=True)
         self.makefile_path.write_text(makefile_content)
+
+        self.root_makefile.touch(exist_ok=True)
+        self.root_makefile.write_text("include tools/makefile")

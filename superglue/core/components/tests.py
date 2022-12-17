@@ -27,12 +27,8 @@ class SuperglueTests(SuperglueComponent):
         return self.tests_path / "modules"
 
     @property
-    def module_init_file(self) -> Path:
-        return self.modules_test_dir / "__init__.py"
-
-    @property
-    def jobs_init_file(self) -> Path:
-        return self.jobs_test_dir / "__init__.py"
+    def conftest_file(self) -> Path:
+        return self.tests_path / "conftest.py"
 
     @property
     def test_dirs(self) -> List[Path]:
@@ -58,14 +54,7 @@ class SuperglueTests(SuperglueComponent):
 
         jinja = self.get_jinja_environment()
 
-        module_init_template = jinja.get_template("module_init.template.py")
-        module_init_content = module_init_template.render()
+        conftest_template = jinja.get_template("conftest.template.py")
 
-        self.module_init_file.touch(exist_ok=True)
-        self.module_init_file.write_text(module_init_content)
-
-        jobs_init_template = jinja.get_template("jobs_init.template.py")
-        jobs_init_content = jobs_init_template.render()
-
-        self.jobs_init_file.touch(exist_ok=True)
-        self.jobs_init_file.write_text(jobs_init_content)
+        self.conftest_file.touch(exist_ok=True)
+        self.conftest_file.write_text(conftest_template.render())

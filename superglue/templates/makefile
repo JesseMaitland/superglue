@@ -31,7 +31,7 @@ test:          ## run tests using pytest in the aws glue docker container
 		-e AWS_PROFILE=${PROFILE_NAME} \
 		-e WORKSPACE_LOCATION=${WORKSPACE_LOCATION} \
 		-e DISABLE_SSL="true" \
-		--rm --name glue_pytest amazon/aws-glue-libs:glue_libs_3.0.0_image_01 -c "python3 -m pytest tests -v"
+		--rm --name glue_pytest amazon/aws-glue-libs:glue_libs_3.0.0_image_01 -c "python3 -m pytest tests -vv -s"
 
 .PHONY: bash
 bash:          ## get a bash prompt in the glue container

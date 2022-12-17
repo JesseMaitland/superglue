@@ -45,6 +45,6 @@ class SuperglueFiles(SuperglueComponent):
 
         for file in self.files:
             file.touch(exist_ok=True)
-            template = jinja.get_template(f"template.{file.name}")
+            template = jinja.get_template(f"template{file.name}")
             file.write_text(template.render())
 
