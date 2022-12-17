@@ -1,5 +1,5 @@
 
-export WORKSPACE_LOCATION = $PWD
+export WORKSPACE_LOCATION = ${PWD}
 
 .PHONY: help
 help:          ## Show help messages and exit.
