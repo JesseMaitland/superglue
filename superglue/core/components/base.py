@@ -108,7 +108,7 @@ class SuperglueComponent(ABC):
 
     def component_files(self) -> List[Path]:
         file_list = []
-        filters = [".DS_Store"]
+        filters = [".DS_Store", ".empty"]
 
         for path in self.component_path.glob("**/*"):
             if path.is_file() and path.name not in filters:
