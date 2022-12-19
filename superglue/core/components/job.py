@@ -2,13 +2,14 @@ import yaml
 import boto3
 import botocore
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from superglue.core.types import SuperglueJobType
 from superglue.core.components.module import SuperglueModule
 from superglue.core.components.base import SuperglueComponent
 from superglue.environment.config import JOBS_PATH, MODULES_PATH
 from superglue.core.components.component_list import SuperglueComponentList
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE
+from superglue.core.components.tests import SuperglueTests
 
 
 class NoAnchorsDumper(yaml.SafeDumper):
@@ -18,15 +19,17 @@ class NoAnchorsDumper(yaml.SafeDumper):
 
 class SuperglueJob(SuperglueComponent):
 
-    def __init__(self, job_name: str) -> None:
+    def __init__(self, job_name: str, tests: Optional[SuperglueTests] = None, *args, **kwargs) -> None:
+        self.tests = tests or SuperglueTests()
 
         super(SuperglueJob, self).__init__(
+            *args,
             root_dir=JOBS_PATH,
             component_name=job_name,
             component_type="superglue_job",
             bucket=SUPERGLUE_S3_BUCKET,
             iam_role=SUPERGLUE_IAM_ROLE,
-
+            **kwargs
         )
 
         try:
@@ -59,6 +62,14 @@ class SuperglueJob(SuperglueComponent):
     @property
     def shared_path(self) -> Path:
         return MODULES_PATH
+
+    @property
+    def job_test_path(self) -> Path:
+        return self.tests.jobs_test_dir / self.job_name
+
+    @property
+    def job_tests_file(self) -> Path:
+        return self.job_test_path / f"test_{self.job_name}.py"
 
     @property
     def main_script_file(self) -> Path:
@@ -264,6 +275,7 @@ class SuperglueJob(SuperglueComponent):
             self.overrides_file.touch(exist_ok=True)
 
             self.save_version_file()
+            self.save_tests()
             print(f"created new glue job {self.job_name}")
         else:
             print(f"The job {self.job_path.name} already exists.")
@@ -282,3 +294,16 @@ class SuperglueJob(SuperglueComponent):
         self.save_deployment_config()
         self.save_version_file()
         print(f"committed superglue job {self.job_name}")
+
+    def save_tests(self) -> None:
+        if not self.job_test_path.exists():
+            jinja = self.get_jinja_environment()
+            test_template = jinja.get_template("job_test.template.py")
+            test_content = test_template.render(job=self.job_name)
+
+            self.job_test_path.mkdir(parents=True, exist_ok=True)
+            self.job_tests_file.touch(exist_ok=True)
+            self.job_tests_file.write_text(test_content)
+            print(f"Tests created for superglue job {self.job_name}")
+        else:
+            print(f"Tests already exists for superglue job {self.job_name}")

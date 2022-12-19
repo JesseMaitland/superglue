@@ -1,16 +1,17 @@
 import zipfile
 from pathlib import Path
 from typing import Optional
-
 from superglue.environment.config import MODULES_PATH
 from superglue.core.types import SuperglueModuleType
 from superglue.core.components.base import SuperglueComponent
+from superglue.core.components.tests import SuperglueTests
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE
 
 
 class SuperglueModule(SuperglueComponent):
 
-    def __init__(self, module_name: str, *args, **kwargs):
+    def __init__(self, module_name: str, tests: Optional[SuperglueTests] = None, *args, **kwargs):
+        self.tests = tests or SuperglueTests()
 
         super(SuperglueModule, self).__init__(
             *args,
@@ -43,6 +44,14 @@ class SuperglueModule(SuperglueComponent):
         relative_path = self.zipfile.relative_to(self.module_root_path)
         return f"{self.s3_path}/{relative_path}"
 
+    @property
+    def module_test_path(self) -> Path:
+        return self.tests.modules_test_dir / self.module_name
+
+    @property
+    def module_tests_file(self):
+        return self.module_test_path / f"test_{self.module_name}.py"
+
     @classmethod
     def new(cls, module_name: str) -> SuperglueModuleType:
         return cls(module_name)
@@ -68,7 +77,10 @@ class SuperglueModule(SuperglueComponent):
             init_py = self.module_inner_path / "__init__.py"
             init_py.touch(exist_ok=True)
             self.save_version_file()
+            self.create_zip()
+            self.save_tests()
             print(f"created new superglue module {self.module_name}")
+
         else:
             print(f"shared python module {self.module_name} already exists.")
 
@@ -107,3 +119,16 @@ class SuperglueModule(SuperglueComponent):
             print(f"Superglue module {self.module_name} has been successfully packaged!")
         else:
             print(f"Superglue module {self.module_name} package is up to date!")
+
+    def save_tests(self) -> None:
+        if not self.module_test_path.exists():
+            jinja = self.get_jinja_environment()
+            tests_template = jinja.get_template("module_test.template.py")
+            test_content = tests_template.render(module=self.module_name)
+
+            self.module_test_path.mkdir(exist_ok=True, parents=True)
+            self.module_tests_file.touch(exist_ok=True)
+            self.module_tests_file.write_text(test_content)
+            print(f"Tests created for superglue module {self.module_name}")
+        else:
+            print(f"Tests already exists for superglue module {self.module_name}")
