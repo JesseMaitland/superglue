@@ -40,9 +40,7 @@ def test_job_property(project: SuperglueProject) -> None:
 
 
 def test_project_dirs_property(project: SuperglueProject) -> None:
-    expected = [
-        JOBS_PATH, MODULES_PATH, NOTEBOOKS_PATH, TOOLS_PATH
-    ]
+    expected = [JOBS_PATH, MODULES_PATH, NOTEBOOKS_PATH, TOOLS_PATH]
     assert expected == project.project_dirs
 
 

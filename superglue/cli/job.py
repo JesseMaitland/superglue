@@ -8,12 +8,7 @@ cli_help = "--> Interact with superglue jobs"
 
 class BaseArgs:
 
-    args = {
-        ("-n", "--name"): {
-            "required": True,
-            "help": "Name of the superglue job (directory)"
-        }
-    }
+    args = {("-n", "--name"): {"required": True, "help": "Name of the superglue job (directory)"}}
 
 
 class New(BaseArgs, SuperglueCommand):

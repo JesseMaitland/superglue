@@ -5,13 +5,9 @@ from superglue.core.types import SuperglueFilesType
 
 
 class SuperglueFiles(SuperglueComponent):
-
     def __init__(self) -> None:
         super(SuperglueFiles, self).__init__(
-            root_dir=Path.cwd(),
-            component_type="superglue_files",
-            component_name="files"
-
+            root_dir=Path.cwd(), component_type="superglue_files", component_name="files"
         )
 
     @property
@@ -24,10 +20,7 @@ class SuperglueFiles(SuperglueComponent):
 
     @property
     def files(self) -> List[Path]:
-        return [
-            self.gitignore_file,
-            self.dotenv_file
-        ]
+        return [self.gitignore_file, self.dotenv_file]
 
     @classmethod
     def new(cls) -> SuperglueFilesType:
@@ -52,4 +45,3 @@ class SuperglueFiles(SuperglueComponent):
     def save(self) -> None:
         self.create_files()
         self.write_file_content()
-

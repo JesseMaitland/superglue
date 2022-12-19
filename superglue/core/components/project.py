@@ -32,12 +32,7 @@ class SuperglueProject:
 
     @property
     def project_dirs(self) -> List[Path]:
-        return [
-            self.jobs_path,
-            self.modules_path,
-            self.notebooks_path,
-            self.tools_path
-        ]
+        return [self.jobs_path, self.modules_path, self.notebooks_path, self.tools_path]
 
     @property
     def job(self) -> Type[SuperglueJob]:

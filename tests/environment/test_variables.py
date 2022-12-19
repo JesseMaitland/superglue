@@ -1,7 +1,4 @@
-from superglue.environment.variables import (
-    SUPERGLUE_S3_BUCKET,
-    SUPERGLUE_IAM_ROLE
-)
+from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE
 
 
 def test_default_s3_bucket() -> None:

@@ -13,15 +13,14 @@ from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUC
 
 
 class SuperglueComponent(ABC):
-
     def __init__(
-            self,
-            root_dir: Path,
-            component_name: str,
-            component_type: str,
-            version_number: Optional[int] = None,
-            bucket: Optional[str] = SUPERGLUE_S3_BUCKET,
-            iam_role: Optional[str] = SUPERGLUE_IAM_ROLE
+        self,
+        root_dir: Path,
+        component_name: str,
+        component_type: str,
+        version_number: Optional[int] = None,
+        bucket: Optional[str] = SUPERGLUE_S3_BUCKET,
+        iam_role: Optional[str] = SUPERGLUE_IAM_ROLE,
     ) -> None:
 
         self.root_dir = root_dir

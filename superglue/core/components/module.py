@@ -9,7 +9,6 @@ from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_R
 
 
 class SuperglueModule(SuperglueComponent):
-
     def __init__(self, module_name: str, tests: Optional[SuperglueTests] = None, *args, **kwargs):
         self.tests = tests or SuperglueTests()
 
@@ -20,7 +19,7 @@ class SuperglueModule(SuperglueComponent):
             component_type="superglue_module",
             bucket=SUPERGLUE_S3_BUCKET,
             iam_role=SUPERGLUE_IAM_ROLE,
-            **kwargs
+            **kwargs,
         )
 
     @property
@@ -123,7 +122,7 @@ class SuperglueModule(SuperglueComponent):
     def save_tests(self) -> None:
         if not self.module_test_path.exists():
             jinja = self.get_jinja_environment()
-            tests_template = jinja.get_template("module_test.template.py")
+            tests_template = jinja.get_template("module_test.template.py.txt")
             test_content = tests_template.render(module=self.module_name)
 
             self.module_test_path.mkdir(exist_ok=True, parents=True)

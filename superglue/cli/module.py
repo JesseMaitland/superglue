@@ -8,12 +8,7 @@ cli_help = "--> Interact with superglue modules"
 
 class BaseArgs:
 
-    args = {
-        ("-n", "--name"): {
-            "required": True,
-            "help": "Name of the superglue module (directory)"
-        }
-    }
+    args = {("-n", "--name"): {"required": True, "help": "Name of the superglue module (directory)"}}
 
 
 class New(BaseArgs, SuperglueCommand):
@@ -46,7 +41,7 @@ class Package(SuperglueCommand):
         ("-f", "--force"): {
             "action": "store_true",
             "default": False,
-            "help": "Force repackaging of all superglue modules, regardless of the local or S3 state."
+            "help": "Force repackaging of all superglue modules, regardless of the local or S3 state.",
         }
     }
 
@@ -68,16 +63,12 @@ class Deploy(SuperglueCommand):
 
     help = "--> Manually deploy a superglue module. Modules must first be up to date using the package command."
     args = {
-        ("-n", "--name"): {
-            "required": True,
-            "help": "Name of the superglue module (directory)"
-        },
-
+        ("-n", "--name"): {"required": True, "help": "Name of the superglue module (directory)"},
         ("-f", "--force"): {
             "action": "store_true",
             "default": False,
-            "help": "Force repackaging of all superglue modules, regardless of the local or S3 state."
-        }
+            "help": "Force repackaging of all superglue modules, regardless of the local or S3 state.",
+        },
     }
 
     @validate_account

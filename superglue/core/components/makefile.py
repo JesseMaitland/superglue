@@ -5,12 +5,9 @@ from superglue.core.types import SuperglueMakefileType
 
 
 class SuperglueMakefile(SuperglueComponent):
-
     def __init__(self) -> None:
         super(SuperglueMakefile, self).__init__(
-            root_dir=TOOLS_PATH,
-            component_type="superglue_tool",
-            component_name="makefile"
+            root_dir=TOOLS_PATH, component_type="superglue_tool", component_name="makefile"
         )
 
     @property

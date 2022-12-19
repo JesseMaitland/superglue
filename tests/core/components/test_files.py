@@ -31,4 +31,3 @@ def test_files_property(files: SuperglueFiles) -> None:
 def test_files_paths(files: SuperglueFiles) -> None:
     for file in files.files:
         assert isinstance(file, Path)
-

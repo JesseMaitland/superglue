@@ -18,7 +18,6 @@ class NoAnchorsDumper(yaml.SafeDumper):
 
 
 class SuperglueJob(SuperglueComponent):
-
     def __init__(self, job_name: str, tests: Optional[SuperglueTests] = None, *args, **kwargs) -> None:
         self.tests = tests or SuperglueTests()
 
@@ -29,7 +28,7 @@ class SuperglueJob(SuperglueComponent):
             component_type="superglue_job",
             bucket=SUPERGLUE_S3_BUCKET,
             iam_role=SUPERGLUE_IAM_ROLE,
-            **kwargs
+            **kwargs,
         )
 
         try:
@@ -256,9 +255,7 @@ class SuperglueJob(SuperglueComponent):
             # set config content
             config_template = jinja.get_template("job_config.template.yml")
             config_content = config_template.render(
-                iam_role=self.iam_role,
-                job_name=self.job_name,
-                s3_main_script_path=self.s3_main_script_path
+                iam_role=self.iam_role, job_name=self.job_name, s3_main_script_path=self.s3_main_script_path
             )
 
             self.config_file.touch(exist_ok=True)
@@ -282,11 +279,7 @@ class SuperglueJob(SuperglueComponent):
 
     def save_deployment_config(self) -> None:
         self.deployment_config_file.touch(exist_ok=True)
-        yaml.dump(
-            self.deployment_config,
-            self.deployment_config_file.open(mode="w"),
-            Dumper=NoAnchorsDumper
-        )
+        yaml.dump(self.deployment_config, self.deployment_config_file.open(mode="w"), Dumper=NoAnchorsDumper)
         print(f"deployment config saved for superglue job {self.job_name}")
 
     def package(self) -> None:
@@ -298,7 +291,7 @@ class SuperglueJob(SuperglueComponent):
     def save_tests(self) -> None:
         if not self.job_test_path.exists():
             jinja = self.get_jinja_environment()
-            test_template = jinja.get_template("job_test.template.py")
+            test_template = jinja.get_template("job_test.template.py.txt")
             test_content = test_template.render(job=self.job_name)
 
             self.job_test_path.mkdir(parents=True, exist_ok=True)

@@ -6,12 +6,9 @@ from superglue.core.types import SuperglueTestsType
 
 
 class SuperglueTests(SuperglueComponent):
-
     def __init__(self) -> None:
         super(SuperglueTests, self).__init__(
-            root_dir=TESTS_PATH,
-            component_type="superglue_tests",
-            component_name="tests"
+            root_dir=TESTS_PATH, component_type="superglue_tests", component_name="tests"
         )
 
     @property
@@ -32,11 +29,7 @@ class SuperglueTests(SuperglueComponent):
 
     @property
     def test_dirs(self) -> List[Path]:
-        return [
-            self.tests_path,
-            self.jobs_test_dir,
-            self.modules_test_dir
-        ]
+        return [self.tests_path, self.jobs_test_dir, self.modules_test_dir]
 
     @classmethod
     def new(cls) -> SuperglueTestsType:

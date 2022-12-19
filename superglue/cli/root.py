@@ -74,12 +74,7 @@ class Deploy(SuperglueCommand):
 
     help = "--> Deploys all superglue jobs and modules which have been changed since the last issued deployment."
 
-    args = {
-        ("-p", "--package"): {
-            "action": "store_true",
-            "default": False
-        }
-    }
+    args = {("-p", "--package"): {"action": "store_true", "default": False}}
 
     def __call__(self) -> None:
         if self.cli_args.package:
@@ -115,18 +110,8 @@ class Generate(SuperglueCommand):
     help = "--> Used to generate superglue tests, and utility files"
 
     args = {
-        ("-t", "--tests"):{
-            "action": "store_true",
-            "default": False
-        },
-
-        ("-m", "--makefile"): {
-            "action": "store_true",
-            "default": False
-
-        },
-
-
+        ("-t", "--tests"): {"action": "store_true", "default": False},
+        ("-m", "--makefile"): {"action": "store_true", "default": False},
     }
 
     def __call__(self) -> None:

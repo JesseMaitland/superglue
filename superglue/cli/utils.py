@@ -27,11 +27,12 @@ def validate_account(func: Callable) -> Callable:
         print(f"\n -- Using AWS Account {SUPERGLUE_AWS_ACCOUNT} --")
 
         return func(*args, **kwargs)
+
     return wrapper
 
 
 def get_parser_name(name: str) -> str:
-    return name.split('.')[-1]
+    return name.split(".")[-1]
 
 
 def yes_no_confirmation(msg: str) -> None:
