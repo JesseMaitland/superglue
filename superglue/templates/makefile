@@ -1,5 +1,5 @@
 
-export WORKSPACE_LOCATION = $PWD
+export WORKSPACE_LOCATION = ${PWD}
 
 .PHONY: help
 help:          ## Show help messages and exit.
@@ -31,7 +31,7 @@ test:          ## run tests using pytest in the aws glue docker container
 		-e AWS_PROFILE=${PROFILE_NAME} \
 		-e WORKSPACE_LOCATION=${WORKSPACE_LOCATION} \
 		-e DISABLE_SSL="true" \
-		--rm --name glue_pytest amazon/aws-glue-libs:glue_libs_3.0.0_image_01 -c "python3 -m pytest tests -v"
+		--rm --name glue_pytest amazon/aws-glue-libs:glue_libs_3.0.0_image_01 -c "python3 -m pytest tests -vv -s"
 
 .PHONY: bash
 bash:          ## get a bash prompt in the glue container
@@ -44,4 +44,4 @@ bash:          ## get a bash prompt in the glue container
 
 .PHONY: gluezip
 gluezip:       ## download the aws glue source code to add as a reference to your project for autocomplete
-	curl https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-3.0/python/PyGlue.zip --output glue_tools/pyglue.zip
+	curl https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-3.0/python/PyGlue.zip --output tools/pyglue.zip

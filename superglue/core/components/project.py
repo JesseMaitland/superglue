@@ -8,6 +8,7 @@ from superglue.core.components.makefile import SuperglueMakefile
 from superglue.core.components.module import SuperglueModule
 from superglue.core.components.job import SuperglueJob
 from superglue.core.components.tests import SuperglueTests
+from superglue.core.components.files import SuperglueFiles
 
 
 class SuperglueProject:
@@ -65,19 +66,35 @@ class SuperglueProject:
         return SuperglueTests
 
     @property
+    def files(self) -> Type[SuperglueFiles]:
+        return SuperglueFiles
+
+    @property
     def pretty_table_fields(self) -> List[str]:
         return ["Component Name", "Component Type", "Local Stats", "s3 Status", "Version Number"]
 
-    def create(self) -> None:
+    def save_project_component(self, component_name: str) -> None:
+        component_property = getattr(self, component_name)
+        component = component_property.new()
+        component.save()
+
+    def save_base_project(self) -> None:
         for project_dir in self.project_dirs:
             project_dir.mkdir(exist_ok=True)
-            project_dir.joinpath(".empty").touch()
 
-        makefile = self.makefile.new()
-        makefile.save()
+    def save_empty_files(self) -> None:
+        for project_dir in self.project_dirs:
+            if not list(project_dir.iterdir()):
+                project_dir.joinpath(".empty").touch()
 
-        tests = self.tests.new()
-        tests.save()
+    def save_project_components(self) -> None:
+        for component in "makefile", "files", "tests":
+            self.save_project_component(component)
+
+    def create(self) -> None:
+        self.save_base_project()
+        self.save_empty_files()
+        self.save_project_components()
 
     def get_pretty_table(self) -> PrettyTable:
         table = PrettyTable()

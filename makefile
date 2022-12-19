@@ -94,7 +94,7 @@ format:
 
 .PHONY: test
 test:
-	pytest ${TEST_DIR} -p no:warnings -s
+	pytest ${TEST_DIR} -p no:warnings -s -vv
 
 
 .PHONY: qa

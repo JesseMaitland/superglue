@@ -6,3 +6,4 @@ SuperglueComponentType = TypeVar("SuperglueComponentType", bound="SuperglueCompo
 SuperglueCommandType = TypeVar("SuperglueCommandType", bound="SuperglueCommand")
 SuperglueMakefileType = TypeVar("SuperglueMakefileType", bound="SuperglueMakefile")
 SuperglueTestsType = TypeVar("SuperglueTestsType", bound="SuperglueTests")
+SuperglueFilesType = TypeVar("SuperglueFilesType", bound="SuperglueFiles")

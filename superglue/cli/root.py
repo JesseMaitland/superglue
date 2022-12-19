@@ -108,3 +108,36 @@ class Deploy(SuperglueCommand):
                 job.deploy()
         else:
             print("All superglue jobs are up to date in S3. Nothing to deploy.")
+
+
+class Generate(SuperglueCommand):
+
+    help = "--> Used to generate superglue tests, and utility files"
+
+    args = {
+        ("-t", "--tests"):{
+            "action": "store_true",
+            "default": False
+        },
+
+        ("-m", "--makefile"): {
+            "action": "store_true",
+            "default": False
+
+        },
+
+
+    }
+
+    def __call__(self) -> None:
+
+        if self.cli_args.tests:
+            for job in self.project.jobs:
+                job.save_tests()
+
+            for module in self.project.modules:
+                module.save_tests()
+
+        if self.cli_args.makefile:
+            makefile = self.project.makefile.new()
+            makefile.save()
