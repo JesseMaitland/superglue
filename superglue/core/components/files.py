@@ -39,12 +39,17 @@ class SuperglueFiles(SuperglueComponent):
     def delete(self) -> None:
         pass
 
-    def save(self) -> None:
-
-        jinja = self.get_jinja_environment()
-
+    def create_files(self) -> None:
         for file in self.files:
             file.touch(exist_ok=True)
+
+    def write_file_content(self) -> None:
+        jinja = self.get_jinja_environment()
+        for file in self.files:
             template = jinja.get_template(f"template{file.name}")
             file.write_text(template.render())
+
+    def save(self) -> None:
+        self.create_files()
+        self.write_file_content()
 
