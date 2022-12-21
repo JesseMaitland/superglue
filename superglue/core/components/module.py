@@ -108,12 +108,9 @@ class SuperglueModule(SuperglueComponent):
 
     def package(self, force: Optional[bool] = False) -> None:
 
-        if force:
-            print(f"Forcing packaging of superglue module {self.module_name}")
+        if force or self.is_edited:
             self.create_zip()
-            self.save_version_file()
-        elif self.is_edited:
-            self.create_zip()
+            self.increment_version()
             self.save_version_file()
             print(f"Superglue module {self.module_name} has been successfully packaged!")
         else:

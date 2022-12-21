@@ -11,7 +11,8 @@ if program_name == "pytest":
     load_dotenv(".test.env", override=True)
 else:
     # load the environment file
-    load_dotenv()
+    env_path = Path.cwd() / ".env"
+    load_dotenv(env_path.as_posix())
 
 
 SUPERGLUE_S3_BUCKET = os.getenv("SUPERGLUE_S3_BUCKET")

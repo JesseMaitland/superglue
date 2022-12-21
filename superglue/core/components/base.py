@@ -28,7 +28,21 @@ class SuperglueComponent(ABC):
         self.component_type = component_type
         self.bucket = bucket
         self.iam_role = iam_role
-        self._version_number = version_number
+
+        try:
+            self._version_hashes = json.load(self.version_file.open())
+        except FileNotFoundError:
+            self._version_hashes = {}
+
+        try:
+            current_version = self._version_hashes.pop("version_number")
+        except KeyError:
+            current_version = 0
+
+        if version_number:
+            current_version = version_number
+
+        self._version_number = current_version
 
     def __eq__(self, other: SuperglueComponentType) -> bool:
         try:
@@ -46,15 +60,11 @@ class SuperglueComponent(ABC):
 
     @property
     def version(self) -> Dict:
-        if not self.version_file.exists():
-            self.save_version_file(increment_version=False)
-        return json.load(self.version_file.open())
+        return self._version_hashes
 
     @property
     def version_number(self) -> int:
-        if self._version_number:
-            return self._version_number
-        return self.version.get("version_number", 0)
+        return self._version_number
 
     @property
     def next_version_number(self) -> int:
@@ -107,11 +117,17 @@ class SuperglueComponent(ABC):
 
     def component_files(self) -> List[Path]:
         file_list = []
-        filters = [".DS_Store", ".empty"]
+        filters = [".DS_Store", ".empty", "__pycache__"]
 
         for path in self.component_path.glob("**/*"):
-            if path.is_file() and path.name not in filters:
-                file_list.append(path)
+            if path.is_file():
+                filtered = False
+                for part in path.parts:
+                    if part in filters:
+                        filtered = True
+
+                if not filtered:
+                    file_list.append(path)
         return file_list
 
     def get_relative_path(self, path: Path) -> str:
@@ -135,14 +151,12 @@ class SuperglueComponent(ABC):
                 version_hashes[key] = digest
         return version_hashes
 
-    def save_version_file(self, increment_version: Optional[bool] = True) -> None:
+    def increment_version(self) -> None:
+        self._version_number += 1
+
+    def save_version_file(self) -> None:
         version_hashes = self.get_version_hashes()
-
-        if increment_version:
-            version_hashes["version_number"] = self.next_version_number
-        else:
-            version_hashes["version_number"] = 0
-
+        version_hashes["version_number"] = self.version_number
         json.dump(version_hashes, self.version_file.open(mode="w"), indent=4)
 
     def upload_object_to_s3(self, path: Path) -> None:

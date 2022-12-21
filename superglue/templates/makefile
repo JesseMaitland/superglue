@@ -45,3 +45,13 @@ bash:          ## get a bash prompt in the glue container
 .PHONY: gluezip
 gluezip:       ## download the aws glue source code to add as a reference to your project for autocomplete
 	curl https://s3.amazonaws.com/aws-glue-jes-prod-us-east-1-assets/etl-3.0/python/PyGlue.zip --output tools/pyglue.zip
+
+
+.PHONY: glue
+glue:          ## clone AWS glue source code and copy it into venv for autocomplete to work.
+	cd tools \
+	&& rm -rf aws-glue-libs \
+	&& git clone git@github.com:awslabs/aws-glue-libs.git \
+	&& cd .. \
+	&& cp -r ./tools/aws-glue-libs/awsglue ./venv/lib/python*/site-packages \
+	&& rm -rf tools/aws-glue-libs

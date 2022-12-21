@@ -283,6 +283,7 @@ class SuperglueJob(SuperglueComponent):
         print(f"deployment config saved for superglue job {self.job_name}")
 
     def package(self) -> None:
+        self.increment_version()
         self.render()
         self.save_deployment_config()
         self.save_version_file()
