@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from superglue.core.components.base import SuperglueComponent
+from superglue.core.components.base import BaseSuperglueComponent
 from superglue.core.components.files import SuperglueFiles
 
 
@@ -11,7 +11,7 @@ def files() -> SuperglueFiles:
 
 
 def test_superglue_files_inheritance() -> None:
-    assert issubclass(SuperglueFiles, SuperglueComponent)
+    assert issubclass(SuperglueFiles, BaseSuperglueComponent)
 
 
 def test_gitignore_property(files: SuperglueFiles) -> None:

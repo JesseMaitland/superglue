@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import List
 from superglue.environment.config import TESTS_PATH
-from superglue.core.components.base import SuperglueComponent
+from superglue.core.components.base import BaseSuperglueComponent
 from superglue.core.types import SuperglueTestsType
 
 
-class SuperglueTests(SuperglueComponent):
+class SuperglueTests(BaseSuperglueComponent):
     def __init__(self) -> None:
         super(SuperglueTests, self).__init__(
             root_dir=TESTS_PATH, component_type="superglue_tests", component_name="tests"
@@ -34,12 +34,6 @@ class SuperglueTests(SuperglueComponent):
     @classmethod
     def new(cls) -> SuperglueTestsType:
         return cls()
-
-    def deploy(self) -> None:
-        pass
-
-    def delete(self) -> None:
-        pass
 
     def save(self) -> None:
         for test_dir in self.test_dirs:
