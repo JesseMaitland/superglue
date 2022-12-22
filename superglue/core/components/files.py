@@ -1,10 +1,10 @@
 from typing import List
 from pathlib import Path
-from superglue.core.components.base import SuperglueComponent
+from superglue.core.components.base import BaseSuperglueComponent
 from superglue.core.types import SuperglueFilesType
 
 
-class SuperglueFiles(SuperglueComponent):
+class SuperglueFiles(BaseSuperglueComponent):
     def __init__(self) -> None:
         super(SuperglueFiles, self).__init__(
             root_dir=Path.cwd(), component_type="superglue_files", component_name="files"
@@ -25,12 +25,6 @@ class SuperglueFiles(SuperglueComponent):
     @classmethod
     def new(cls) -> SuperglueFilesType:
         return cls()
-
-    def deploy(self) -> None:
-        pass
-
-    def delete(self) -> None:
-        pass
 
     def create_files(self) -> None:
         for file in self.files:

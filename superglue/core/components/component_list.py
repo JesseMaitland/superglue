@@ -1,5 +1,5 @@
 from typing import List
-from superglue.core.components.base import SuperglueComponentType
+from superglue.core.types import SuperglueComponentType
 
 
 class SuperglueComponentList(list):

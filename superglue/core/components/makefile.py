@@ -1,10 +1,10 @@
 from pathlib import Path
 from superglue.environment.config import TOOLS_PATH
-from superglue.core.components.base import SuperglueComponent
+from superglue.core.components.base import BaseSuperglueComponent
 from superglue.core.types import SuperglueMakefileType
 
 
-class SuperglueMakefile(SuperglueComponent):
+class SuperglueMakefile(BaseSuperglueComponent):
     def __init__(self) -> None:
         super(SuperglueMakefile, self).__init__(
             root_dir=TOOLS_PATH, component_type="superglue_tool", component_name="makefile"
@@ -21,12 +21,6 @@ class SuperglueMakefile(SuperglueComponent):
     @classmethod
     def new(cls) -> SuperglueMakefileType:
         return cls()
-
-    def deploy(self) -> None:
-        pass
-
-    def delete(self) -> None:
-        pass
 
     def save(self) -> None:
         if not self.makefile_path.exists():

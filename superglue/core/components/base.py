@@ -7,44 +7,27 @@ from hashlib import md5
 from abc import ABC, abstractmethod
 from multiprocessing import Pool, cpu_count
 from jinja2 import Environment, PackageLoader
-from typing import Optional, Dict, Tuple, List
-from superglue.core.types import SuperglueComponentType
+from typing import Optional, Dict, Tuple, List, TypeVar
 from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET
 
 
-class SuperglueComponent(ABC):
+BaseSuperglueComponentType = TypeVar(name="BaseSuperglueComponentType", bound="BaseSuperglueComponent")
+
+
+class BaseSuperglueComponent(ABC):
+
     def __init__(
         self,
         root_dir: Path,
         component_name: str,
-        component_type: str,
-        version_number: Optional[int] = None,
-        bucket: Optional[str] = SUPERGLUE_S3_BUCKET,
-        iam_role: Optional[str] = SUPERGLUE_IAM_ROLE,
+        component_type: str
     ) -> None:
 
         self.root_dir = root_dir
         self.component_name = component_name
         self.component_type = component_type
-        self.bucket = bucket
-        self.iam_role = iam_role
 
-        try:
-            self._version_hashes = json.load(self.version_file.open())
-        except FileNotFoundError:
-            self._version_hashes = {}
-
-        try:
-            current_version = self._version_hashes.pop("version_number")
-        except KeyError:
-            current_version = 0
-
-        if version_number:
-            current_version = version_number
-
-        self._version_number = current_version
-
-    def __eq__(self, other: SuperglueComponentType) -> bool:
+    def __eq__(self, other: BaseSuperglueComponentType) -> bool:
         try:
             return self.component_name == other.component_name
         except AttributeError:
@@ -54,21 +37,49 @@ class SuperglueComponent(ABC):
     def component_path(self) -> Path:
         return self.root_dir / self.component_name
 
+    @staticmethod
+    def get_jinja_environment() -> Environment:
+        """
+        used to get a jinja2 templating environment.
+        Returns: Jinja2 Environment
+        """
+        loader = PackageLoader(package_name="superglue", package_path="templates")
+        return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
+
+    @abstractmethod
+    def save(self) -> None:
+        pass
+
+
+class SuperglueComponent(BaseSuperglueComponent, ABC):
+
+    def __init__(
+        self,
+        bucket: Optional[str] = SUPERGLUE_S3_BUCKET,
+        iam_role: Optional[str] = SUPERGLUE_IAM_ROLE,
+        *args,
+        **kwargs
+    ) -> None:
+        super(SuperglueComponent, self).__init__(*args, **kwargs)
+
+        self.bucket = bucket
+        self.iam_role = iam_role
+
+        try:
+            self.version = json.load(self.version_file.open())
+        except FileNotFoundError:
+            self.version = {}
+
+        try:
+            current_version = self.version.pop("version_number")
+        except KeyError:
+            current_version = 0
+
+        self.version_number = current_version
+
     @property
     def version_file(self) -> Path:
         return self.component_path / ".version"
-
-    @property
-    def version(self) -> Dict:
-        return self._version_hashes
-
-    @property
-    def version_number(self) -> int:
-        return self._version_number
-
-    @property
-    def next_version_number(self) -> int:
-        return self.version_number + 1
 
     @property
     def s3_path(self) -> str:
@@ -106,14 +117,8 @@ class SuperglueComponent(ABC):
     def pretty_table_row(self) -> List[str]:
         return [self.component_name, self.component_type, *self.status, self.version_number]
 
-    @staticmethod
-    def get_jinja_environment() -> Environment:
-        """
-        used to get a jinja2 templating environment.
-        Returns: Jinja2 Environment
-        """
-        loader = PackageLoader(package_name="superglue", package_path="templates")
-        return Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
+    def increment_version(self) -> None:
+        self.version_number += 1
 
     def component_files(self) -> List[Path]:
         file_list = []
@@ -122,6 +127,7 @@ class SuperglueComponent(ABC):
         for path in self.component_path.glob("**/*"):
             if path.is_file():
                 filtered = False
+
                 for part in path.parts:
                     if part in filters:
                         filtered = True
@@ -150,9 +156,6 @@ class SuperglueComponent(ABC):
                 key, digest = self.hash_file(path)
                 version_hashes[key] = digest
         return version_hashes
-
-    def increment_version(self) -> None:
-        self._version_number += 1
 
     def save_version_file(self) -> None:
         version_hashes = self.get_version_hashes()

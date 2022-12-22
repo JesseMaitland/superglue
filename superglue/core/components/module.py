@@ -9,7 +9,14 @@ from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_R
 
 
 class SuperglueModule(SuperglueComponent):
-    def __init__(self, module_name: str, tests: Optional[SuperglueTests] = None, *args, **kwargs):
+    def __init__(
+            self, module_name: str,
+            version_number: Optional[int] = None,
+            tests: Optional[SuperglueTests] = None,
+            *args,
+            **kwargs
+    ) -> None:
+
         self.tests = tests or SuperglueTests()
 
         super(SuperglueModule, self).__init__(
@@ -21,6 +28,9 @@ class SuperglueModule(SuperglueComponent):
             iam_role=SUPERGLUE_IAM_ROLE,
             **kwargs,
         )
+
+        if version_number:
+            self.version_number = version_number
 
     @property
     def module_name(self) -> str:
