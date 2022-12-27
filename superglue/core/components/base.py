@@ -91,7 +91,7 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
 
     @property
     def s3_version_path(self) -> str:
-        return f"{self.s3_prefix}/{self.component_name}/.version"
+        return f"{self.s3_prefix}/.version"
 
     @property
     def is_edited(self) -> bool:

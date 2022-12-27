@@ -22,18 +22,23 @@ class SuperglueMakefile(BaseSuperglueComponent):
     def new(cls) -> SuperglueMakefileType:
         return cls()
 
+    def save_root_makefile(self) -> None:
+        self.root_makefile.touch(exist_ok=True)
+        self.root_makefile.write_text("include tools/makefile")
+
+    def save_tools_makefile(self, content: str) -> None:
+        self.makefile_path.touch(exist_ok=True)
+        self.makefile_path.write_text(content)
+
+    def get_tools_makefile_content(self) -> str:
+        jinja = self.get_jinja_environment()
+        return jinja.get_template("makefile").render()
+
     def save(self) -> None:
         if not self.makefile_path.exists():
-            jinja = self.get_jinja_environment()
-
-            makefile_template = jinja.get_template("makefile")
-            makefile_content = makefile_template.render()
-
-            self.makefile_path.touch(exist_ok=True)
-            self.makefile_path.write_text(makefile_content)
-
-            self.root_makefile.touch(exist_ok=True)
-            self.root_makefile.write_text("include tools/makefile")
+            content = self.get_tools_makefile_content()
+            self.save_tools_makefile(content)
+            self.save_root_makefile()
         else:
             print("Superglue makefile already exists in tools/makefile.")
             print("Manually delete it and rerun this command to get a fresh one.")
