@@ -1,12 +1,10 @@
 # Superglue
-## A CLI tool for developing and deploying AWS glue jobs
+## A CLI tool for developing, testing and deploying AWS glue jobs
 ### VERSION 0.4.0
 
-Superglue is intended to make the development, troubleshooting and deployment of AWS glue jobs simple.
+Superglue makes the development, troubleshooting and deployment of AWS glue jobs simple. It also makes creating a shared 
+glue codebase easy and testable
 
-AWS glue is a powerful technology and is great for processing medium-sized datasets into your datalake, however
-deployment, deployment and testing of glue jobs is far less straight forward. We hope that `superglue` will make working
-with aws glue simpler than ever for you.
 
 # Getting Started
 ```
@@ -15,31 +13,45 @@ pip install superglue
 
 ### Create a Superglue Project
 
-Superglue expects a few directories and files to exist, and be named in a certain way. In this regard, you could say 
-`superglue` is opinionated.
-
+Superglue is intended to be used for a "project" or "collection" of AWS glue jobs. To create a superglue project run
 ```
-superglue project init
+superglue init
+```
+
+### Project Structure
+```
+jobs        -- all of your glue jobs live here
+modules     -- shared glue code lives hwere
+notebooks   -- jupyter notebooks live here
+tests       -- where your tests for jobs and modules go
+tools       -- holds the superglue makefile can be used for other scripts and snippets
+.env        -- the environment vars needed to make superglue tick
+makefile     -- used as a master makefile. Includes tools/makefile
+.gitignore  -- a templated .gitignore to get you started
 ```
 
 ### Create a New Job
-A superglue job is really just the job definition file, as well as your code all in one place (directory) To create a job
-simply run the command 
+A superglue job is a 
 
 ```
-superglue job new <job-name>
+superglue job new --name <your job name>
 ```
 
 #### Job Directory Structure
 ```
-glue_jobs
-    my_job
-        jars       -- put your job java dependencies here
-        py         -- put your python dependencies here
-        .version   -- file used to track diff between local and s3
-        config.yml  -- holds the aws glue job execution configuration
-        main.py    -- the main entry point for the glue job
+jobs
+ my_job
+     jars           -- put your job java dependencies here (optional)
+     py             -- put your python dependencies here   (optional)
+     .version       -- file used to track diff between local and s3
+     config.yml      -- holds the aws glue job execution configuration
+     overrides.yml  -- used to create multiple instances of your job (optional)
+     deployment.yml -- holds the job deployment configuration 
+     main.py        -- the main entry point for the glue job
 ```
+
+#### Developing Your Job
+You can now develop your job.
 
 ### Deploy a Job
 `superglue` is intended to help automate the deployment and development process of glue jobs. To deploy a

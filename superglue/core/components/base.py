@@ -83,7 +83,7 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
 
     @property
     def s3_path(self) -> str:
-        return f"s3://{self.bucket}/superglue/{self.component_type}/{self.component_name}/version={self.version_number}"
+        return f"s3://{self.bucket}/superglue/{self.component_type}/{self.component_name}/version={self.version_number}/{self.component_name}"
 
     @property
     def s3_prefix(self) -> str:
@@ -91,7 +91,7 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
 
     @property
     def s3_version_path(self) -> str:
-        return f"{self.s3_prefix}/.version"
+        return f"{self.s3_prefix}/{self.component_name}/.version"
 
     @property
     def is_edited(self) -> bool:
@@ -99,7 +99,10 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
 
     @property
     def is_deployable(self) -> bool:
-        return self.is_edited is False and self.version != self.fetch_s3_version()
+        s3_version = self.fetch_s3_version()
+        local_version = self.version.copy()
+        local_version["version_number"] = self.version_number
+        return self.is_edited is False and local_version != s3_version
 
     @property
     def status(self) -> Tuple[str, str]:

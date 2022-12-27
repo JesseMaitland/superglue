@@ -229,7 +229,6 @@ class SuperglueJob(SuperglueComponent):
     def deploy(self) -> None:
         if self.is_deployable:
             self.render()
-            self.package()
             self.sync()
             self.create_or_update()
             print(f"Successfully deployed superglue job {self.job_name}")
