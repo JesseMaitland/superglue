@@ -98,8 +98,7 @@ class SuperglueJob(SuperglueComponent):
             pass
         except TypeError:
             pass
-        finally:
-            return []
+        return []
 
     @property
     def jar_files(self) -> List[Path]:
