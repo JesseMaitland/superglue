@@ -5,13 +5,11 @@ from superglue.core.components.base import BaseSuperglueComponent, SuperglueComp
 
 
 class _BaseSuperglueComponent(BaseSuperglueComponent):
-
     def save(self) -> None:
         pass
 
 
 class _SuperglueComponent(SuperglueComponent):
-
     def save(self) -> None:
         pass
 
@@ -47,8 +45,9 @@ def superglue_component() -> SuperglueComponent:
         component_type="eggs",
         component_name="spam",
         bucket="spam-eggs-sausage-and-spam",
-        iam_role="The-Almighty-God-Himself"
+        iam_role="The-Almighty-God-Himself",
     )
+
 
 def test_base_component_name(base_component: BaseSuperglueComponent) -> None:
     assert base_component.component_name == "foo"
@@ -152,5 +151,3 @@ def test_superglue_component_s3_prefix(superglue_component: SuperglueComponent) 
 def test_superglue_component_s3_version_path(superglue_component: SuperglueComponent) -> None:
     version_path = "superglue/eggs/spam/version=0/spam/.version"
     assert superglue_component.s3_version_path == version_path
-
-

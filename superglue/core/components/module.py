@@ -10,11 +10,12 @@ from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_R
 
 class SuperglueModule(SuperglueComponent):
     def __init__(
-            self, module_name: str,
-            version_number: Optional[int] = None,
-            tests: Optional[SuperglueTests] = None,
-            *args,
-            **kwargs
+        self,
+        module_name: str,
+        version_number: Optional[int] = None,
+        tests: Optional[SuperglueTests] = None,
+        *args,
+        **kwargs,
     ) -> None:
 
         self.tests = tests or SuperglueTests()

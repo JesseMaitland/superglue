@@ -15,13 +15,7 @@ BaseSuperglueComponentType = TypeVar(name="BaseSuperglueComponentType", bound="B
 
 
 class BaseSuperglueComponent(ABC):
-
-    def __init__(
-        self,
-        root_dir: Path,
-        component_name: str,
-        component_type: str
-    ) -> None:
+    def __init__(self, root_dir: Path, component_name: str, component_type: str) -> None:
 
         self.root_dir = root_dir
         self.component_name = component_name
@@ -52,13 +46,8 @@ class BaseSuperglueComponent(ABC):
 
 
 class SuperglueComponent(BaseSuperglueComponent, ABC):
-
     def __init__(
-        self,
-        bucket: Optional[str] = SUPERGLUE_S3_BUCKET,
-        iam_role: Optional[str] = SUPERGLUE_IAM_ROLE,
-        *args,
-        **kwargs
+        self, bucket: Optional[str] = SUPERGLUE_S3_BUCKET, iam_role: Optional[str] = SUPERGLUE_IAM_ROLE, *args, **kwargs
     ) -> None:
         super(SuperglueComponent, self).__init__(*args, **kwargs)
 

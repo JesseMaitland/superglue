@@ -57,4 +57,3 @@ def test_makefile_get_tools_makefile_content(makefile: SuperglueMakefile) -> Non
     jinja2 = makefile.get_jinja_environment()
     content = jinja2.get_template("makefile").render()
     assert content == makefile.get_tools_makefile_content()
-
