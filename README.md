@@ -25,87 +25,110 @@ modules     -- shared glue code lives hwere
 notebooks   -- jupyter notebooks live here
 tests       -- where your tests for jobs and modules go
 tools       -- holds the superglue makefile can be used for other scripts and snippets
+makefile    -- used as a master makefile. Includes tools/makefile
 .env        -- the environment vars needed to make superglue tick
-makefile     -- used as a master makefile. Includes tools/makefile
 .gitignore  -- a templated .gitignore to get you started
 ```
 
-### Create a New Job
-A superglue job is a 
+### The Superglue Job 
+A superglue job is a directory which contains your job's `config.yml` file, as well as a `main.py` entrypoint, `jarfile` dependencies,
+other python scripts, and deployment info about the job.
 
 ```
 superglue job new --name <your job name>
 ```
 
 #### Job Directory Structure
+
 ```
 jobs
- my_job
-     jars           -- put your job java dependencies here (optional)
-     py             -- put your python dependencies here   (optional)
-     .version       -- file used to track diff between local and s3
-     config.yml      -- holds the aws glue job execution configuration
-     overrides.yml  -- used to create multiple instances of your job (optional)
-     deployment.yml -- holds the job deployment configuration 
-     main.py        -- the main entry point for the glue job
+    my_job
+        jars           -- put your job java dependencies here (optional)
+        py             -- put your python dependencies here   (optional)
+        config.yml      -- holds the aws glue job execution configuration
+        overrides.yml  -- used to create multiple instances of your job (optional)
+        deployment.yml -- holds the job deployment configuration 
+        main.py        -- the main entry point for the glue job
+        .version       -- file used to track diff between local and s3
 ```
 
 #### Developing Your Job
-You can now develop your job.
+Your job can now be developed using your desired IDE. At anytime you can check the packaging status
+of your job by running `superglue status`
 
-### Deploy a Job
-`superglue` is intended to help automate the deployment and development process of glue jobs. To deploy a
-single job to the AWS glue infrastructure, simply run
-
+### Deploying a Superglue Job
+Once you are satisfied with your glue job, you can then deploy it on AWS. To do this, you must first package your job by running
 ```
-superglue job deploy <job-name>
+superglue job package
 ```
+This command will then create a version number for your job, as well as a hash value used to track the state
+of the job. This can be found in the `.version` file in your job directory.
 
-## Sharing Code
-AWS glue allows importing python modules that have been unloaded to s3, zipped in the appropriate structure, and have been added to the `--extra-py-files` argument. 
+To deploy your job, now you need to simply run
+```
+superglue job deploy
+```
+This will do the following things 
+1. Check that all jobs can be deployed
+2. Upload all job files to S3
+3. Create the job in AWS glue
+
+
+## The Superglue Module
+AWS glue allows importing python modules that have been uploaded to s3, zipped in the appropriate structure, and have been added to the `--extra-py-files` argument. 
 Manually managing these dependencies is difficult and error-prone. `superglue` allows you to create, package, 
 and include shared code in your glue jobs in the following way. 
 
-### Create a new shared module
+### Create a new module
 
-All code which is shareable across modules lives in the `/shared` directory. 
-
-```
-superglue module new <module-name>
-```
-
-Adding a new shared module will create the following structure
+All code which is shareable across superglue jobs lives in the `/modules` directory. 
 
 ```
-shared
-    my_module_code
-        my_module_name
-            __init__.py    
-            " put your code files here "
-        .version
-        my_module_name.zip
+superglue module new --name <your module name>
+```
+
+#### Module Directory Structure
+```
+modules
+    my_module_code          -- the parent directory for your module              
+        my_module_name      -- your code lives here. This is the zipfile's root directory
+            __init__.py     -- required for the zip archive
+        .version            -- used by superglue to track changes
+        my_module_name.zip  -- zip archive used by the glue job itself
 ```
 
 Once you are happy with your module you can run
 ```
-superglue module build <module-name>
+superglue module package
 ```
 
 This will give your module a version number, and create a zip archive with the AWS glue expected
 file / directory structure.
 
-To include this module in your jobs, simply add the module name to the `shared` key in `config.yml`
+To include this module in your superglue job, simply add the module name to the `superglue_modules` section in
+your job's `config.yml` file.  
 ```
-shared:
-    - my_module
+superglue_module:
+    module_name:
+       version_number: <integer value version number>
 ```
 
 This code will now be importable in your glue job.
+```python
+from my_module import foo_bar # in this case, my_module is the name of the zipfile archive
+```
 
-## Makefile
-After running ``superglue project init`` a `makefile` was created. This file is intended to help automate your 
-local aws development and testing environment. To see the available commands, please run
-``make help``
+## The Superglue Makefile
+After running `superglue init` 2 makefiles were created. One in the root directory `makefile` and one in 
+`tools/makefile`
+
+The `makefile` in your projects root directory is intended to be used to add whatever custom automation
+to your project that you like, and not clutter up the superglue makefile itself. By default, it will include
+the superglue makefile at `tools/makefile`
+
+From the project's root directory, you can run `make help`
+
+
 
 
 
