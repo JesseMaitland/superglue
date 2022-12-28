@@ -145,3 +145,10 @@ This will clone the `aws-glue-libs` project from github into the `/tools` direct
 your `venv` and remove the repo once completed. Your IDE autocomplete engine should automatically index this
 and make suggestions for you during local development
 
+
+## Superglue Testing
+All superglue tests can be found in the `/tests` directory. These tests get mapped into the docker container and run
+by using the `make test` command. All tests are run in the docker container using `pytest` 
+
+All import paths are included on the `PYTHONPATH` automatically. All superglue jobs and modules should be 
+directly importable. 
