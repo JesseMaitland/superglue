@@ -1,4 +1,3 @@
-
 export WORKSPACE_LOCATION = ${PWD}
 
 .PHONY: help
