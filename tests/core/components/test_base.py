@@ -140,7 +140,7 @@ def test_superglue_component_version_file(superglue_component: SuperglueComponen
 
 
 def test_superglue_component_s3_path(superglue_component: SuperglueComponent) -> None:
-    s3_path = "s3://spam-eggs-sausage-and-spam/superglue/eggs/spam/version=0"
+    s3_path = "s3://spam-eggs-sausage-and-spam/superglue/eggs/spam/version=0/spam"
     assert superglue_component.s3_path == s3_path
 
 
@@ -150,7 +150,7 @@ def test_superglue_component_s3_prefix(superglue_component: SuperglueComponent) 
 
 
 def test_superglue_component_s3_version_path(superglue_component: SuperglueComponent) -> None:
-    version_path = "superglue/eggs/spam/version=0/.version"
+    version_path = "superglue/eggs/spam/version=0/spam/.version"
     assert superglue_component.s3_version_path == version_path
 
 
