@@ -128,8 +128,20 @@ the superglue makefile at `tools/makefile`
 
 From the project's root directory, you can run `make help`
 
+### AWS Glue Docker Image (Official AWS)
+For local development and testing of your superglue jobs and modules, you can pull the official AWS glue docker
+image from docker hub by running
+```
+make pull
+```
 
-
-
-
+### IDE Autocomplete
+To allow your IDE to make auto complete suggestions, we need to include the AWS glue source code in project venv.
+To do this just run
+```
+make glue
+```
+This will clone the `aws-glue-libs` project from github into the `/tools` directory, copy the `awsglue` source code into
+your `venv` and remove the repo once completed. Your IDE autocomplete engine should automatically index this
+and make suggestions for you during local development
 
