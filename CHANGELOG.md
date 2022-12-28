@@ -1,5 +1,12 @@
 <!--next-version-placeholder-->
 
+## v0.5.0 (2022-12-28)
+### Feature
+* **makefile:** Add glue command ([`2c09ce8`](https://github.com/JesseMaitland/superglue/commit/2c09ce84f167fae18014b7516fdf36af083cdb80))
+
+### Fix
+* **formatting:** Fix black errors ([`8901270`](https://github.com/JesseMaitland/superglue/commit/89012703a7b4ec8f60fb3736f4487c353007af94))
+
 ## v0.4.0 (2022-12-19)
 ### Feature
 * **cli:** Commands refactored and working ([`adb62c8`](https://github.com/JesseMaitland/superglue/commit/adb62c8f95bdf7d9b014ddfae6da0d5b18905280))
