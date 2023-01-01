@@ -81,35 +81,19 @@ class SuperglueModule(SuperglueComponent):
         return sg_module
 
     def save(self) -> None:
-        if not self.module_root_path.exists():
-            self.module_inner_path.mkdir(parents=True, exist_ok=True)
+        self.module_inner_path.mkdir(parents=True, exist_ok=True)
+        init_py = self.module_inner_path / "__init__.py"
+        init_py.touch(exist_ok=True)
+        self.save_version_file()
+        self.save_tests()
 
-            init_py = self.module_inner_path / "__init__.py"
-            init_py.touch(exist_ok=True)
-            self.save_version_file()
-            self.create_zip()
-            self.save_tests()
-            print(f"created new superglue module {self.module_name}")
-
-        else:
-            print(f"shared python module {self.module_name} already exists.")
-
-    def deploy(self, force: Optional[bool] = False) -> None:
-        if force:
-            print(f"Forcing deployment of superglue module {self.module_name}")
-            self.sync()
-        elif self.is_deployable:
-            self.sync()
-            print(f"Superglue module {self.module_name} successfully deployed!")
-        elif self.is_edited:
-            print(f"Superglue module {self.module_name} has edits in progress. Please run superglue package")
-        else:
-            print(f"Superglue module {self.module_name} up to date in S3. Nothing to deploy.")
+    def deploy(self) -> None:
+        self.sync()
 
     def delete(self) -> None:
         raise NotImplementedError
 
-    def create_zip(self) -> None:
+    def package(self) -> None:
         with zipfile.ZipFile(self.zipfile, mode="w") as zip_file:
             for file in self.module_root_path.glob("**/*.py"):
                 content = file.read_text()
@@ -117,25 +101,12 @@ class SuperglueModule(SuperglueComponent):
                 rel_path = file.relative_to(self.module_root_path).as_posix()
                 zip_file.writestr(rel_path, content)
 
-    def package(self, force: Optional[bool] = False) -> None:
-
-        if force or self.is_edited:
-            self.create_zip()
-            self.increment_version()
-            self.save_version_file()
-            print(f"Superglue module {self.module_name} has been successfully packaged!")
-        else:
-            print(f"Superglue module {self.module_name} package is up to date!")
-
     def save_tests(self) -> None:
-        if not self.module_test_path.exists():
-            jinja = self.get_jinja_environment()
-            tests_template = jinja.get_template("module_test.template.py.txt")
-            test_content = tests_template.render(module=self.module_name)
+        jinja = self.get_jinja_environment()
+        tests_template = jinja.get_template("module_test.template.py.txt")
+        test_content = tests_template.render(module=self.module_name)
 
-            self.module_test_path.mkdir(exist_ok=True, parents=True)
-            self.module_tests_file.touch(exist_ok=True)
-            self.module_tests_file.write_text(test_content)
-            print(f"Tests created for superglue module {self.module_name}")
-        else:
-            print(f"Tests already exists for superglue module {self.module_name}")
+        self.module_test_path.mkdir(exist_ok=True, parents=True)
+        self.module_tests_file.touch(exist_ok=True)
+        self.module_tests_file.write_text(test_content)
+

@@ -228,11 +228,11 @@ class SuperglueJob(SuperglueComponent):
 
     def deploy(self) -> None:
         if self.is_deployable:
-            self.render()
+            self.generate_deployment_yml()
             self.sync()
             self.create_or_update()
             print(f"Successfully deployed superglue job {self.job_name}")
-        elif self.is_edited:
+        elif self.is_locked:
             print(f"Superglue job {self.job_name} has edits in progress. Please run superglue package")
         else:
             print(f"Superglue job {self.job_name} up to date in S3. Nothing to deploy.")
@@ -280,12 +280,20 @@ class SuperglueJob(SuperglueComponent):
         yaml.dump(self.deployment_config, self.deployment_config_file.open(mode="w"), Dumper=NoAnchorsDumper)
         print(f"deployment config saved for superglue job {self.job_name}")
 
+
+
     def package(self) -> None:
         self.increment_version()
         self.render()
         self.save_deployment_config()
         self.save_version_file()
         print(f"committed superglue job {self.job_name}")
+
+    def generate_deployment_yml(self) -> None:
+        if self.deployment_config_file.exists():
+            self.deployment_config_file.unlink()
+        self.render()
+        self.save_deployment_config()
 
     def save_tests(self) -> None:
         if not self.job_test_path.exists():
