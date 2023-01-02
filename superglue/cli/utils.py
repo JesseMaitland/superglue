@@ -2,16 +2,16 @@ import boto3
 import inspect
 from typing import List, Any, Callable
 from types import ModuleType
-from superglue.cli.command import SuperglueCommand
-from superglue.core.types import SuperglueCommandType
+from superglue.cli.base import BaseSuperglueCommand
+from superglue.cli.base import SuperglueCommandType
 from superglue.environment.variables import SUPERGLUE_AWS_ACCOUNT
 
 
 def get_commands(module: ModuleType) -> List[SuperglueCommandType]:
     commands = []
     for _, _class in inspect.getmembers(module, inspect.isclass):
-        if _class != SuperglueCommand:
-            if issubclass(_class, SuperglueCommand):
+        if _class != BaseSuperglueCommand:
+            if issubclass(_class, BaseSuperglueCommand):
                 commands.append(_class)
     return commands
 

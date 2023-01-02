@@ -45,6 +45,7 @@ class BaseSuperglueComponent(ABC):
         pass
 
 
+SuperglueComponentType = TypeVar("SuperglueComponentType", bound="SuperglueComponent")
 class SuperglueComponent(BaseSuperglueComponent, ABC):
     def __init__(
         self, bucket: Optional[str] = SUPERGLUE_S3_BUCKET, iam_role: Optional[str] = SUPERGLUE_IAM_ROLE, *args, **kwargs
@@ -65,6 +66,10 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
             current_version = 0
 
         self.version_number = current_version
+
+    @property
+    def name(self) -> str:
+        return self.component_name
 
     @property
     def version_file(self) -> Path:

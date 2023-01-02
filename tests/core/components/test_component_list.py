@@ -10,9 +10,9 @@ def mock_components() -> List[MagicMock]:
     mm2 = MagicMock()
     mm3 = MagicMock()
 
-    mm1.is_edited = True
-    mm2.is_edited = True
-    mm3.is_edited = False
+    mm1.is_locked = True
+    mm2.is_locked = True
+    mm3.is_locked = False
 
     mm1.is_deployable = True
     mm2.is_deployable = False
@@ -27,7 +27,7 @@ def test_inherits_list() -> None:
 
 def test_edited_filter(mock_components: List[MagicMock]) -> None:
     component_list = SuperglueComponentList(mock_components)
-    results = component_list.edited()
+    results = component_list.locked()
     assert results == [mock_components[0], mock_components[1]]
     assert isinstance(results, list)
 

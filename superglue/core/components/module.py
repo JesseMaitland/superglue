@@ -1,17 +1,18 @@
 import zipfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TypeVar
 from superglue.environment.config import MODULES_PATH
-from superglue.core.types import SuperglueModuleType
 from superglue.core.components.base import SuperglueComponent
 from superglue.core.components.tests import SuperglueTests
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE
 
 
+SuperglueModuleType = TypeVar("SuperglueModuleType", bound="SuperglueModule")
+
 class SuperglueModule(SuperglueComponent):
     def __init__(
         self,
-        module_name: str,
+        name: str,
         version_number: Optional[int] = None,
         tests: Optional[SuperglueTests] = None,
         *args,
@@ -23,7 +24,7 @@ class SuperglueModule(SuperglueComponent):
         super(SuperglueModule, self).__init__(
             *args,
             root_dir=MODULES_PATH,
-            component_name=module_name,
+            component_name=name,
             component_type="superglue_module",
             bucket=SUPERGLUE_S3_BUCKET,
             iam_role=SUPERGLUE_IAM_ROLE,
@@ -34,20 +35,16 @@ class SuperglueModule(SuperglueComponent):
             self.version_number = version_number
 
     @property
-    def module_name(self) -> str:
-        return self.component_name
-
-    @property
     def module_root_path(self) -> Path:
-        return self.root_dir / self.module_name
+        return self.root_dir / self.name
 
     @property
     def module_inner_path(self) -> Path:
-        return self.module_root_path / self.module_name
+        return self.module_root_path / self.name
 
     @property
     def zipfile(self) -> Path:
-        return self.module_root_path / f"{self.module_name}.zip"
+        return self.module_root_path / f"{self.name}.zip"
 
     @property
     def s3_zipfile_path(self) -> str:
@@ -56,11 +53,16 @@ class SuperglueModule(SuperglueComponent):
 
     @property
     def module_test_path(self) -> Path:
-        return self.tests.modules_test_dir / self.module_name
+        return self.tests.modules_test_dir / self.name
 
     @property
     def module_tests_file(self):
-        return self.module_test_path / f"test_{self.module_name}.py"
+        return self.module_test_path / f"test_{self.name}.py"
+
+    @property
+    def is_packaged(self) -> bool:
+        return self.zipfile.exists()
+
 
     @classmethod
     def new(cls, module_name: str) -> SuperglueModuleType:
@@ -75,7 +77,7 @@ class SuperglueModule(SuperglueComponent):
 
     @classmethod
     def from_version(cls, module_name: str, version_number: int) -> SuperglueModuleType:
-        sg_module = cls(module_name=module_name, version_number=version_number)
+        sg_module = cls(name=module_name, version_number=version_number)
         if not sg_module.module_root_path.exists():
             raise FileNotFoundError(f"No superglue module {module_name} exists.")
         return sg_module
@@ -101,10 +103,14 @@ class SuperglueModule(SuperglueComponent):
                 rel_path = file.relative_to(self.module_root_path).as_posix()
                 zip_file.writestr(rel_path, content)
 
+    def remove_zipfile(self) -> None:
+        if self.zipfile.exists():
+            self.zipfile.unlink()
+
     def save_tests(self) -> None:
         jinja = self.get_jinja_environment()
         tests_template = jinja.get_template("module_test.template.py.txt")
-        test_content = tests_template.render(module=self.module_name)
+        test_content = tests_template.render(module=self.name)
 
         self.module_test_path.mkdir(exist_ok=True, parents=True)
         self.module_tests_file.touch(exist_ok=True)

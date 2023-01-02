@@ -1,7 +1,10 @@
 from pathlib import Path
+from typing import TypeVar
 from superglue.environment.config import TOOLS_PATH
 from superglue.core.components.base import BaseSuperglueComponent
-from superglue.core.types import SuperglueMakefileType
+
+
+SuperglueMakefileType = TypeVar("SuperglueMakefileType", bound="SuperglueMakefile")
 
 
 class SuperglueMakefile(BaseSuperglueComponent):

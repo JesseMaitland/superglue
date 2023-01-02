@@ -77,18 +77,12 @@ class SuperglueProject:
         for project_dir in self.project_dirs:
             project_dir.mkdir(exist_ok=True)
 
-    def save_empty_files(self) -> None:
-        for project_dir in self.project_dirs:
-            if not list(project_dir.iterdir()):
-                project_dir.joinpath(".empty").touch()
-
     def save_project_components(self) -> None:
         for component in "makefile", "files", "tests":
             self.save_project_component(component)
 
     def create(self) -> None:
         self.save_base_project()
-        self.save_empty_files()
         self.save_project_components()
 
     def get_pretty_table(self) -> PrettyTable:

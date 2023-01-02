@@ -1,8 +1,10 @@
 from pathlib import Path
-from typing import List
+from typing import List, TypeVar
 from superglue.environment.config import TESTS_PATH
 from superglue.core.components.base import BaseSuperglueComponent
-from superglue.core.types import SuperglueTestsType
+
+
+SuperglueTestsType = TypeVar("SuperglueTestsType", bound="SuperglueTests")
 
 
 class SuperglueTests(BaseSuperglueComponent):
