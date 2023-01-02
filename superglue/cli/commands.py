@@ -69,7 +69,7 @@ class Check(BaseSuperglueCommand):
     @validate_account
     def __call__(self) -> None:
 
-        if self.project.jobs.are_unlocked() or self.project.modules.are_unlocked():
+        if not self.project.is_locked():
             Messages.no_deployment()
             exit(1)
 
@@ -89,16 +89,21 @@ class Lock(BaseSuperglueCommand):
 
         Messages.locking_jobs()
 
-        for job in self.project.jobs.unlocked():
-            Messages.locking_job(job)
-            job.lock()
+        if self.project.jobs.are_unlocked():
+            for job in self.project.jobs.unlocked():
+                Messages.locking_job(job)
+                job.lock()
+        else:
+            Messages.all_jobs_locked()
 
         Messages.locking_modules()
 
-        for module in self.project.modules.unlocked():
-            Messages.locking_module(module)
-            module.lock()
-
+        if self.project.modules.are_unlocked():
+            for module in self.project.modules.unlocked():
+                Messages.locking_module(module)
+                module.lock()
+        else:
+            Messages.all_modules_locked()
 
 class Package(BaseSuperglueCommand):
 
@@ -133,7 +138,7 @@ class Package(BaseSuperglueCommand):
             exit(1)
 
     def package(self) -> None:
-        for module in self.project.modules.locked():
+        for module in self.project.modules.is_locked():
             module.package()
             Messages.packaging_module(module.name)
         Messages.packaging_complete()
@@ -185,11 +190,16 @@ class Deploy(BaseSuperglueCommand):
         }
     }
 
+    @validate_account
     def __call__(self) -> None:
 
-        # first run the check command to make sure we can actually deploy
-        check = Check(self.cli_args)
-        check()
+        if not self.project.is_locked():
+            Messages.no_deployment()
+            exit(1)
+
+        if self.project.modules.are_not_packaged():
+            Messages.not_packaged()
+            exit(1)
 
         if self.cli_args.dry:
             Messages.dry_run()
@@ -197,6 +207,7 @@ class Deploy(BaseSuperglueCommand):
             self.dry_job_deploy()
             exit(0)
 
+        Messages.yes_deployment()
         self.module_deploy()
         self.job_deploy()
 

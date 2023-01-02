@@ -89,7 +89,7 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
 
     @property
     def is_locked(self) -> bool:
-        return self.version != self.get_version_hashes()
+        return self.version == self.get_version_hashes()
 
     @property
     def is_unlocked(self) -> bool:

@@ -1,6 +1,8 @@
+import os
 import yaml
 import boto3
 import botocore
+from io import StringIO
 from pathlib import Path
 from typing import Dict, List, Optional, TypeVar
 from superglue.core.components.module import SuperglueModule
@@ -34,7 +36,8 @@ class SuperglueJob(SuperglueComponent):
         )
 
         try:
-            self.config: Dict = yaml.safe_load(self.config_file.open())
+            config_context = os.path.expandvars(self.config_file.read_text())
+            self.config: Dict = yaml.safe_load(StringIO(config_context))
         except FileNotFoundError:
             self.config = {}
 
@@ -164,7 +167,6 @@ class SuperglueJob(SuperglueComponent):
         config["job_config"]["Command"]["ScriptLocation"] = self.s3_main_script_path
 
         if self.overrides:
-            print(f"Overrides found for superglue job {self.name}")
             for override in self.overrides:
                 config_override = config.copy()["job_config"]
                 default_args = config_override["DefaultArguments"].copy()
@@ -173,7 +175,6 @@ class SuperglueJob(SuperglueComponent):
                 config_override["DefaultArguments"].update(**default_args)
                 self.deployment_config["job_configs"].append(config_override)
         else:
-            print(f"No overrides found for superglue job {self.name}. Using base config")
             self.deployment_config["job_configs"].append(self.config.copy()["job_config"])
 
     def create_or_update(self) -> None:

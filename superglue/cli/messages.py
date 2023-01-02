@@ -42,7 +42,7 @@ class Messages:
 
     @staticmethod
     def locking_modules() -> None:
-        print("\n------------------> Locking Superglue Jobs <------------------\n")
+        print("\n------------------> Locking Superglue Modules <------------------\n")
 
     @staticmethod
     def locking_job(job: SuperglueJobType) -> None:
@@ -86,8 +86,9 @@ class Messages:
         if dry:
             pre = "-- Dry Run -- "
 
-        print(f"{pre}Superglue job {job.name} Would be deployed to the following location.")
+        print(f"{pre}Superglue job {job.name} deployed to the following location.")
         print(job.s3_path)
+        print("\n")
 
     @staticmethod
     def module_deploy(module: SuperglueModuleType, dry: Optional[bool] = False) -> None:
@@ -102,6 +103,14 @@ class Messages:
     @staticmethod
     def not_packaged() -> None:
         print("There are unpackaged modules present. Deployment not possible.")
+
+    @staticmethod
+    def all_jobs_locked() -> None:
+        print("All superglue jobs are locked")
+
+    @staticmethod
+    def all_modules_locked() -> None:
+        print("All superglue modules are locked")
 
     def component_exists(self) -> None:
         print(f"{self.component.component_type.capitalize()} {self.component.component_name} already exists.")
