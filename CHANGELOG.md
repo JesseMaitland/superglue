@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.6.0 (2023-01-03)
+### Feature
+* **ci:** Change fetch depth: ([`65effeb`](https://github.com/JesseMaitland/superglue/commit/65effebc3659e8c71d461755849e690ffdc80c3d))
+
 ## v0.5.0 (2022-12-28)
 ### Feature
 * **makefile:** Add glue command ([`2c09ce8`](https://github.com/JesseMaitland/superglue/commit/2c09ce84f167fae18014b7516fdf36af083cdb80))
