@@ -1,7 +1,9 @@
-from typing import List
+from typing import List, TypeVar
 from pathlib import Path
 from superglue.core.components.base import BaseSuperglueComponent
-from superglue.core.types import SuperglueFilesType
+
+
+SuperglueFilesType = TypeVar("SuperglueFilesType", bound="SuperglueFiles")
 
 
 class SuperglueFiles(BaseSuperglueComponent):

@@ -21,7 +21,7 @@ superglue init
 ### Project Structure
 ```
 jobs        -- all of your glue jobs live here
-modules     -- shared glue code lives hwere
+modules     -- shared glue code lives here
 notebooks   -- jupyter notebooks live here
 tests       -- where your tests for jobs and modules go
 tools       -- holds the superglue makefile can be used for other scripts and snippets
@@ -35,7 +35,7 @@ A superglue job is a directory which contains your job's `config.yml` file, as w
 other python scripts, and deployment info about the job.
 
 ```
-superglue job new --name <your job name>
+superglue new job --name <your job name>
 ```
 
 #### Job Directory Structure
@@ -56,25 +56,54 @@ jobs
 Your job can now be developed using your desired IDE. At anytime you can check the packaging status
 of your job by running `superglue status`
 
+
+### Locking Your Job
+Before a job can be deployed, it must be locked by superglue. Once the job is locked, it will be assigned a version number
+which will auto-increment each time the job is locked. This number is more or less arbitrary, however it is used to keep previous
+versions of your job available in AWS S3.
+
+```
+superglue lock
+```
+
+#### Config.yml
+The `config.yml` file is where the base parameters for your glue job configuration will live. Any parameter that can be passed to the 
+boto3 glue client can be included in this config file. 
+
+Environment variable expansion is also supported. So you can do things like
+```yaml
+ScriptLocation: s3://some-bucket-${SOME_ENV_VAR}-path
+```
+
+Where the value for `${SOME_ENV_VAR}` will be taken from your machine's environment. 
+
+#### Overrides.yml
+This file is intended to make instances of your glue job with overridden properties possible and is used in the following way.
+Values in `config.yml` will be overridden by whatever you put in here, with the `config.yml` used as the base. In this sense you can think
+of this as an inheritance relationship where `overrides.yml` contains the children of `config.yml`
+```yaml
+overrides:
+  - Name: heavy_workers
+    NumberOfWorkers: 20
+  - Name: light_workers
+    NumberOfWorkers: 2
+```
+
+In the above example, 2 jobs will be created using the base parameters found in `config.yml` and the overridden values of 
+`Name: ` and `NumberOfWorkers: ` will be used to create the `deployment.yml` file. 
+
+
+
 ### Deploying a Superglue Job
-Once you are satisfied with your glue job, you can then deploy it on AWS. To do this, you must first package your job by running
+Once you are satisfied with your glue job, you can then deploy it on AWS. Just run
 ```
-superglue job package
+superglue deploy
 ```
-This command will then create a version number for your job, as well as a hash value used to track the state
-of the job. This can be found in the `.version` file in your job directory.
 
-To deploy your job, now you need to simply run
-```
-superglue job deploy
-```
-This will do the following things 
-1. Check that all jobs can be deployed
-2. Upload all job files to S3
-3. Create the job in AWS glue
+This will upload your code to S3 to the configured locations, as well as create the glue job definition in AWS Glue. 
 
 
-## The Superglue Module
+## Superglue Modules (Shared Glue Codebase)
 AWS glue allows importing python modules that have been uploaded to s3, zipped in the appropriate structure, and have been added to the `--extra-py-files` argument. 
 Manually managing these dependencies is difficult and error-prone. `superglue` allows you to create, package, 
 and include shared code in your glue jobs in the following way. 
@@ -84,10 +113,10 @@ and include shared code in your glue jobs in the following way.
 All code which is shareable across superglue jobs lives in the `/modules` directory. 
 
 ```
-superglue module new --name <your module name>
+superglue new module --name <your module name>
 ```
 
-#### Module Directory Structure
+### Module Directory Structure
 ```
 modules
     my_module_code          -- the parent directory for your module              
@@ -97,16 +126,24 @@ modules
         my_module_name.zip  -- zip archive used by the glue job itself
 ```
 
-Once you are happy with your module you can run
+### Locking a Superglue Module
+Superglue modules must be locked before they can be packaged and deployed. Once locked, they will be assigned a version 
+number which will be auto incremented. This number is arbitrary, however allows for keeping multiple versions of your modules in S3
+to allow jobs which may use a previous version to still function.
+
 ```
-superglue module package
+superglue lock
 ```
 
-This will give your module a version number, and create a zip archive with the AWS glue expected
-file / directory structure.
+### Packaging a Superglue Module
+Superglue modules need to be packaged into a zip archive before they can be used by AWS glue. To do this run
+```
+superglue package
+```
 
-To include this module in your superglue job, simply add the module name to the `superglue_modules` section in
-your job's `config.yml` file.  
+### Using a Superglue Module in a Glue Job
+To include a module in your superglue job, simply add the module name to the `superglue_modules` section in
+your job's `config.yml` file along with the version number you want to use.  
 ```
 superglue_module:
     module_name:
@@ -152,3 +189,6 @@ by using the `make test` command. All tests are run in the docker container usin
 
 All import paths are included on the `PYTHONPATH` automatically. All superglue jobs and modules should be 
 directly importable. 
+
+To tests superglue modules, they must first be packaged. Before running `make test` you must run `superglue package`
+This will ensure that the actual zip archive is being tested, which is what your glue job will actually be using.

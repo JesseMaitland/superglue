@@ -63,3 +63,4 @@ cover/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+*.zip

@@ -45,6 +45,9 @@ class BaseSuperglueComponent(ABC):
         pass
 
 
+SuperglueComponentType = TypeVar("SuperglueComponentType", bound="SuperglueComponent")
+
+
 class SuperglueComponent(BaseSuperglueComponent, ABC):
     def __init__(
         self, bucket: Optional[str] = SUPERGLUE_S3_BUCKET, iam_role: Optional[str] = SUPERGLUE_IAM_ROLE, *args, **kwargs
@@ -67,6 +70,10 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
         self.version_number = current_version
 
     @property
+    def name(self) -> str:
+        return self.component_name
+
+    @property
     def version_file(self) -> Path:
         return self.component_path / ".version"
 
@@ -83,38 +90,46 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
         return f"{self.s3_prefix}/{self.component_name}/.version"
 
     @property
-    def is_edited(self) -> bool:
-        return self.version != self.get_version_hashes()
+    def is_locked(self) -> bool:
+        return self.version == self.get_version_hashes()
+
+    @property
+    def is_unlocked(self) -> bool:
+        return not self.is_locked
 
     @property
     def is_deployable(self) -> bool:
         s3_version = self.fetch_s3_version()
         local_version = self.version.copy()
         local_version["version_number"] = self.version_number
-        return self.is_edited is False and local_version != s3_version
+        return self.is_locked and local_version != s3_version
 
     @property
     def status(self) -> Tuple[str, str]:
 
-        if self.is_edited:
-            return "edits in progress", "out of sync"
+        if self.is_unlocked:
+            return "unlocked", "out of sync"
 
         elif self.is_deployable:
-            return "up to date", "out of sync"
+            return "locked", "out of sync"
 
         else:
-            return "up to date", "in sync"
+            return "locked", "in sync"
 
     @property
     def pretty_table_row(self) -> List[str]:
         return [self.component_name, self.component_type, *self.status, self.version_number]
+
+    @property
+    def next_version_number(self) -> int:
+        return self.version_number + 1
 
     def increment_version(self) -> None:
         self.version_number += 1
 
     def component_files(self) -> List[Path]:
         file_list = []
-        filters = [".DS_Store", ".empty", "__pycache__"]
+        filters = [".DS_Store", ".empty", "__pycache__", ".zip"]
 
         for path in self.component_path.glob("**/*"):
             if path.is_file():
@@ -143,8 +158,13 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
 
     def get_version_hashes(self) -> Dict[str, str]:
         version_hashes = {}
+        filters = [
+            ".version",
+            "deployment.yml",
+        ]
+
         for path in self.component_files():
-            if path.name != ".version":
+            if path.name not in filters and path.suffix != ".zip":
                 key, digest = self.hash_file(path)
                 version_hashes[key] = digest
         return version_hashes
@@ -177,6 +197,10 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
             if code == "Not Found":
                 return {}
             raise e
+
+    def lock(self) -> None:
+        self.increment_version()
+        self.save_version_file()
 
     @abstractmethod
     def deploy(self) -> None:

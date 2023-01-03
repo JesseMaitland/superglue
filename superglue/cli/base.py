@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
+from typing import TypeVar
 from argparse import Namespace
 from superglue.core.components.project import SuperglueProject
 
+SuperglueCommandType = TypeVar("SuperglueCommandType", bound="BaseSuperglueCommand")
 
-class SuperglueCommand(ABC):
+
+class BaseSuperglueCommand(ABC):
 
     args = {}
     help = ""
