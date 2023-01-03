@@ -35,7 +35,7 @@ superglue = "superglue.__main__:main"
 
 
 [tool.semantic_release]
-version_variable = "superglue/cli/__init__.py:__version__"
+version_variable = "superglue/cli/commands.py:__version__"
 version_toml = "pyproject.toml:project.version"
 version_pattern = "README.md:VERSION {version}"
 upload_to_pypi = true
