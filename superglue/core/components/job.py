@@ -283,5 +283,3 @@ class SuperglueJob(SuperglueComponent):
         self.job_test_path.mkdir(parents=True, exist_ok=True)
         self.job_tests_file.touch(exist_ok=True)
         self.job_tests_file.write_text(test_content)
-
-

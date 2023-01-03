@@ -36,15 +36,8 @@ class New(BaseSuperglueCommand):
     help = "--> Creates a new superglue job or module"
 
     args = {
-        ("component_type",): {
-            "choices": ["job", "module"],
-            "help": "Can be either job or module"
-        },
-
-        ("-n", "--name"): {
-            "required": True,
-            "help": "The name of the new component to create"
-        }
+        ("component_type",): {"choices": ["job", "module"], "help": "Can be either job or module"},
+        ("-n", "--name"): {"required": True, "help": "The name of the new component to create"},
     }
 
     def __call__(self) -> None:
@@ -105,16 +98,12 @@ class Lock(BaseSuperglueCommand):
         else:
             Messages.all_modules_locked()
 
+
 class Package(BaseSuperglueCommand):
 
     help = "--> Packages all superglue jobs and modules which have been edited since the last package was issued."
 
-    args = {
-        ("-p", "--purge"): {
-            "action": "store_true",
-            "default": False
-        }
-    }
+    args = {("-p", "--purge"): {"action": "store_true", "default": False}}
 
     def __call__(self) -> None:
 
@@ -150,17 +139,8 @@ class Status(BaseSuperglueCommand):
     help = "--> Prints the current status of all superglue jobs and modules."
 
     args = {
-        ("-m", "--modules"): {
-            "action": "store_true",
-            "default": False,
-            "dest": "only_modules"
-        },
-
-        ("-j", "--jobs"): {
-            "action": "store_true",
-            "default": False,
-            "dest": "only_jobs"
-        }
+        ("-m", "--modules"): {"action": "store_true", "default": False, "dest": "only_modules"},
+        ("-j", "--jobs"): {"action": "store_true", "default": False, "dest": "only_jobs"},
     }
 
     @validate_account
@@ -186,7 +166,7 @@ class Deploy(BaseSuperglueCommand):
         ("-d", "--dry"): {
             "action": "store_true",
             "default": False,
-            "help": "Print a dry run to the terminal of what superglue would deploy"
+            "help": "Print a dry run to the terminal of what superglue would deploy",
         }
     }
 

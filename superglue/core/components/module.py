@@ -9,6 +9,7 @@ from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_R
 
 SuperglueModuleType = TypeVar("SuperglueModuleType", bound="SuperglueModule")
 
+
 class SuperglueModule(SuperglueComponent):
     def __init__(
         self,
@@ -63,7 +64,6 @@ class SuperglueModule(SuperglueComponent):
     def is_packaged(self) -> bool:
         return self.zipfile.exists()
 
-
     @classmethod
     def new(cls, module_name: str) -> SuperglueModuleType:
         return cls(module_name)
@@ -115,4 +115,3 @@ class SuperglueModule(SuperglueComponent):
         self.module_test_path.mkdir(exist_ok=True, parents=True)
         self.module_tests_file.touch(exist_ok=True)
         self.module_tests_file.write_text(test_content)
-

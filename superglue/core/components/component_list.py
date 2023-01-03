@@ -3,7 +3,6 @@ from superglue.core.components.base import SuperglueComponentType
 
 
 class SuperglueComponentList(list):
-
     def deployable(self) -> List[SuperglueComponentType]:
         return [c for c in self if c.is_deployable]
 

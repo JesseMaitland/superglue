@@ -5,7 +5,6 @@ from superglue.core.components.module import SuperglueModuleType
 
 
 class Messages:
-
     def __init__(self, component: SuperglueComponentType) -> None:
         self.component = component
 
@@ -116,6 +115,6 @@ class Messages:
         print(f"{self.component.component_type.capitalize()} {self.component.component_name} already exists.")
 
     def component_created(self) -> None:
-        print(f"{self.component.component_type.capitalize()} {self.component.component_name} has been created successfully.")
-
-
+        print(
+            f"{self.component.component_type.capitalize()} {self.component.component_name} has been created successfully."
+        )

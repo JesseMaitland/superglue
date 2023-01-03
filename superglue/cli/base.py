@@ -5,6 +5,7 @@ from superglue.core.components.project import SuperglueProject
 
 SuperglueCommandType = TypeVar("SuperglueCommandType", bound="BaseSuperglueCommand")
 
+
 class BaseSuperglueCommand(ABC):
 
     args = {}

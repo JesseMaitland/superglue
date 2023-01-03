@@ -46,6 +46,8 @@ class BaseSuperglueComponent(ABC):
 
 
 SuperglueComponentType = TypeVar("SuperglueComponentType", bound="SuperglueComponent")
+
+
 class SuperglueComponent(BaseSuperglueComponent, ABC):
     def __init__(
         self, bucket: Optional[str] = SUPERGLUE_S3_BUCKET, iam_role: Optional[str] = SUPERGLUE_IAM_ROLE, *args, **kwargs
@@ -156,7 +158,10 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
 
     def get_version_hashes(self) -> Dict[str, str]:
         version_hashes = {}
-        filters = [".version", "deployment.yml", ]
+        filters = [
+            ".version",
+            "deployment.yml",
+        ]
 
         for path in self.component_files():
             if path.name not in filters and path.suffix != ".zip":
