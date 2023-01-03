@@ -142,22 +142,6 @@ def test_save_base_project() -> None:
         mock_dirs[0].mkdir.assert_called_once_with(exist_ok=True)
 
 
-def test_save_empty_files() -> None:
-    with patch.object(SuperglueProject, "project_dirs") as project_dirs:
-        mock_dirs = [MagicMock()]
-        joinpath_return = MagicMock()
-
-        mock_dirs[0].iterdir.return_value = []
-        mock_dirs[0].joinpath.return_value = joinpath_return
-        project_dirs.__iter__.return_value = mock_dirs
-
-        project = SuperglueProject()
-        project.save_empty_files()
-
-        mock_dirs[0].joinpath.assert_called_once_with(".empty")
-        joinpath_return.touch.assert_called_once()
-
-
 def test_save_project_components() -> None:
     with patch.object(SuperglueProject, "save_project_component") as save_project_component:
         project = SuperglueProject()
@@ -170,11 +154,9 @@ def test_save_project_components() -> None:
 
 def test_create_project_method() -> None:
     with patch.object(SuperglueProject, "save_base_project") as save_base_project:
-        with patch.object(SuperglueProject, "save_empty_files") as save_empty_files:
-            with patch.object(SuperglueProject, "save_project_components") as save_project_components:
-                project = SuperglueProject()
-                project.create()
+        with patch.object(SuperglueProject, "save_project_components") as save_project_components:
+            project = SuperglueProject()
+            project.create()
 
-                save_base_project.assert_called_once()
-                save_empty_files.assert_called_once()
-                save_project_components.assert_called_once()
+            save_base_project.assert_called_once()
+            save_project_components.assert_called_once()

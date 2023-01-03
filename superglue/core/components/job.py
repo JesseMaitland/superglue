@@ -1,15 +1,19 @@
+import os
 import yaml
 import boto3
 import botocore
+from io import StringIO
 from pathlib import Path
-from typing import Dict, List, Optional
-from superglue.core.types import SuperglueJobType
+from typing import Dict, List, Optional, TypeVar
 from superglue.core.components.module import SuperglueModule
 from superglue.core.components.base import SuperglueComponent
 from superglue.environment.config import JOBS_PATH, MODULES_PATH
 from superglue.core.components.component_list import SuperglueComponentList
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE
 from superglue.core.components.tests import SuperglueTests
+
+
+SuperglueJobType = TypeVar("SuperglueJobType", bound="SuperglueJob")
 
 
 class NoAnchorsDumper(yaml.SafeDumper):
@@ -32,19 +36,16 @@ class SuperglueJob(SuperglueComponent):
         )
 
         try:
-            self.config: Dict = yaml.safe_load(self.config_file.open())
+            config_context = os.path.expandvars(self.config_file.read_text())
+            self.config: Dict = yaml.safe_load(StringIO(config_context))
         except FileNotFoundError:
             self.config = {}
 
         self.deployment_config = {"job_configs": []}
 
     @property
-    def job_name(self) -> str:
-        return self.component_name
-
-    @property
     def job_path(self) -> Path:
-        return self.root_dir / self.job_name
+        return self.root_dir / self.name
 
     @property
     def check_path(self) -> Path:
@@ -64,11 +65,11 @@ class SuperglueJob(SuperglueComponent):
 
     @property
     def job_test_path(self) -> Path:
-        return self.tests.jobs_test_dir / self.job_name
+        return self.tests.jobs_test_dir / self.name
 
     @property
     def job_tests_file(self) -> Path:
-        return self.job_test_path / f"test_{self.job_name}.py"
+        return self.job_test_path / f"test_{self.name}.py"
 
     @property
     def main_script_file(self) -> Path:
@@ -166,7 +167,6 @@ class SuperglueJob(SuperglueComponent):
         config["job_config"]["Command"]["ScriptLocation"] = self.s3_main_script_path
 
         if self.overrides:
-            print(f"Overrides found for superglue job {self.job_name}")
             for override in self.overrides:
                 config_override = config.copy()["job_config"]
                 default_args = config_override["DefaultArguments"].copy()
@@ -175,7 +175,6 @@ class SuperglueJob(SuperglueComponent):
                 config_override["DefaultArguments"].update(**default_args)
                 self.deployment_config["job_configs"].append(config_override)
         else:
-            print(f"No overrides found for superglue job {self.job_name}. Using base config")
             self.deployment_config["job_configs"].append(self.config.copy()["job_config"])
 
     def create_or_update(self) -> None:
@@ -227,15 +226,9 @@ class SuperglueJob(SuperglueComponent):
         return extra_file_args
 
     def deploy(self) -> None:
-        if self.is_deployable:
-            self.render()
-            self.sync()
-            self.create_or_update()
-            print(f"Successfully deployed superglue job {self.job_name}")
-        elif self.is_edited:
-            print(f"Superglue job {self.job_name} has edits in progress. Please run superglue package")
-        else:
-            print(f"Superglue job {self.job_name} up to date in S3. Nothing to deploy.")
+        self.generate_deployment_yml()
+        self.sync()
+        self.create_or_update()
 
     def delete(self) -> None:
         pass
@@ -253,7 +246,7 @@ class SuperglueJob(SuperglueComponent):
             # set config content
             config_template = jinja.get_template("job_config.template.yml")
             config_content = config_template.render(
-                iam_role=self.iam_role, job_name=self.job_name, s3_main_script_path=self.s3_main_script_path
+                iam_role=self.iam_role, job_name=self.name, s3_main_script_path=self.s3_main_script_path
             )
 
             self.config_file.touch(exist_ok=True)
@@ -271,31 +264,22 @@ class SuperglueJob(SuperglueComponent):
 
             self.save_version_file()
             self.save_tests()
-            print(f"created new glue job {self.job_name}")
-        else:
-            print(f"The job {self.job_path.name} already exists.")
 
     def save_deployment_config(self) -> None:
         self.deployment_config_file.touch(exist_ok=True)
         yaml.dump(self.deployment_config, self.deployment_config_file.open(mode="w"), Dumper=NoAnchorsDumper)
-        print(f"deployment config saved for superglue job {self.job_name}")
 
-    def package(self) -> None:
-        self.increment_version()
+    def generate_deployment_yml(self) -> None:
+        if self.deployment_config_file.exists():
+            self.deployment_config_file.unlink()
         self.render()
         self.save_deployment_config()
-        self.save_version_file()
-        print(f"committed superglue job {self.job_name}")
 
     def save_tests(self) -> None:
-        if not self.job_test_path.exists():
-            jinja = self.get_jinja_environment()
-            test_template = jinja.get_template("job_test.template.py.txt")
-            test_content = test_template.render(job=self.job_name)
+        jinja = self.get_jinja_environment()
+        test_template = jinja.get_template("job_test.template.py.txt")
+        test_content = test_template.render(job=self.name)
 
-            self.job_test_path.mkdir(parents=True, exist_ok=True)
-            self.job_tests_file.touch(exist_ok=True)
-            self.job_tests_file.write_text(test_content)
-            print(f"Tests created for superglue job {self.job_name}")
-        else:
-            print(f"Tests already exists for superglue job {self.job_name}")
+        self.job_test_path.mkdir(parents=True, exist_ok=True)
+        self.job_tests_file.touch(exist_ok=True)
+        self.job_tests_file.write_text(test_content)
