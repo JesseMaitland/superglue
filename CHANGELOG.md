@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.8.0 (2023-01-06)
+### Feature
+* **package:** Add packaging of all modules ([`3106829`](https://github.com/JesseMaitland/superglue/commit/310682944d4f687a56845a2b328d37351a3eb4b6))
+
 ## v0.7.0 (2023-01-03)
 ### Feature
 * **ci:** Bump version ([`322efb2`](https://github.com/JesseMaitland/superglue/commit/322efb2827dc692b628879a443c1dbd92e4c4fd3))
