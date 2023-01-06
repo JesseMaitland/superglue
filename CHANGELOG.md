@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.7.0 (2023-01-03)
+### Feature
+* **ci:** Bump version ([`322efb2`](https://github.com/JesseMaitland/superglue/commit/322efb2827dc692b628879a443c1dbd92e4c4fd3))
+
 ## v0.6.0 (2023-01-03)
 ### Feature
 * **ci:** Change fetch depth: ([`65effeb`](https://github.com/JesseMaitland/superglue/commit/65effebc3659e8c71d461755849e690ffdc80c3d))
