@@ -127,7 +127,7 @@ class Package(BaseSuperglueCommand):
             exit(1)
 
     def package(self) -> None:
-        for module in self.project.modules.is_locked():
+        for module in self.project.modules:
             module.package()
             Messages.packaging_module(module.name)
         Messages.packaging_complete()
