@@ -194,7 +194,7 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
                 return json.load(buffer)
         except botocore.exceptions.ClientError as e:
             code = e.args[0].partition(":")[2].strip()
-            if code == "Not Found":
+            if code in ["Not Found", "Forbidden"]:
                 return {}
             raise e
 
