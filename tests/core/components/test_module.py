@@ -58,10 +58,11 @@ def test_module_get_class_method(module_root_path: MagicMock) -> None:
 
 
 @patch.object(SuperglueModule, "module_root_path")
-def test_module_get_class_method(module_root_path: MagicMock) -> None:
+def test_module_get_class_method_ex(module_root_path: MagicMock) -> None:
     module_root_path.exists.return_value = False
     with pytest.raises(FileNotFoundError):
         _ = SuperglueModule.get("foo")
+
 
 @patch.object(SuperglueModule, "module_root_path")
 def test_module_from_version_class_method(module_root_path: MagicMock) -> None:
@@ -70,8 +71,59 @@ def test_module_from_version_class_method(module_root_path: MagicMock) -> None:
     assert module.name == "beast"
     assert module.version_number == 666
 
+
+@patch.object(SuperglueModule, "module_root_path")
+def test_module_from_version_class_method_ex(module_root_path: MagicMock) -> None:
+    module_root_path.exists.return_value = False
+    with pytest.raises(FileNotFoundError):
+        _ = SuperglueModule.from_version("bar", 1)
+
+
+@patch.object(SuperglueModule, "save_tests")
+@patch.object(SuperglueModule, "save_version_file")
+@patch.object(SuperglueModule, "module_inner_path")
+def test_module_save_method(module_inner_path, save_version_file, save_tests) -> None:
+    mock_path = MagicMock()
+    module_inner_path.__truediv__.return_value = mock_path
+
+    module = SuperglueModule("spam")
+    module.save()
+
+    mock_path.touch.assert_called_once_with(exist_ok=True)
+    save_version_file.assert_called_once()
+    save_tests.assert_called_once()
+
+
 @patch.object(SuperglueModule, "sync")
 def test_module_deploy_method(sync: MagicMock) -> None:
     module = SuperglueModule("foo")
     module.deploy()
     sync.assert_called_once()
+
+
+def test_module_delete_not_implemented(module: SuperglueModule) -> None:
+    with pytest.raises(NotImplementedError):
+        module.delete()
+
+
+def test_module_package_method() -> None:
+    #TODO: This method is a bit ugly to test, perhaps needs refactor
+    pass
+
+
+@patch.object(SuperglueModule, "zipfile")
+def test_module_remove_zipfile_true(zipfile: MagicMock) -> None:
+    zipfile.exists.return_value = True
+    module = SuperglueModule("bananas")
+    module.remove_zipfile()
+
+    zipfile.unlink.assert_called_once()
+
+
+@patch.object(SuperglueModule, "zipfile")
+def test_module_remove_zipfile_false(zipfile: MagicMock) -> None:
+    zipfile.exists.return_value = False
+    module = SuperglueModule("bananas")
+    module.remove_zipfile()
+
+    zipfile.unlink.assert_not_called()
