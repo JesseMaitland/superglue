@@ -1,10 +1,7 @@
 import sys
 from pathlib import Path
 
-_MODULES_DIR = Path.cwd() / "modules"
+for path in Path.cwd().joinpath("modules").iterdir():
+    sys.path.append(path.as_posix())
 
-for zipfile in _MODULES_DIR.glob("**/*.zip"):
-    sys.path.append(zipfile.as_posix())
-
-_JOBS_DIR = Path.cwd() / "jobs"
-sys.path.append(_JOBS_DIR.as_posix())
+sys.path.append(Path.cwd().joinpath("jobs").as_posix())
