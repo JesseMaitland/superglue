@@ -1,6 +1,6 @@
 import zipfile
 from pathlib import Path
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, List
 from superglue.environment.config import MODULES_PATH
 from superglue.core.components.base import SuperglueComponent
 from superglue.core.components.tests import SuperglueTests
@@ -82,6 +82,9 @@ class SuperglueModule(SuperglueComponent):
             raise FileNotFoundError(f"No superglue module {module_name} exists.")
         return sg_module
 
+    def module_files(self) -> List[Path]:
+        return list(self.module_root_path.glob("**/*.py"))
+
     def save(self) -> None:
         self.module_inner_path.mkdir(parents=True, exist_ok=True)
         init_py = self.module_inner_path / "__init__.py"
@@ -95,13 +98,18 @@ class SuperglueModule(SuperglueComponent):
     def delete(self) -> None:
         raise NotImplementedError
 
+    def zipfile_relative_path(self, path: Path) -> str:
+        return path.relative_to(self.module_root_path).as_posix()
+
+    def zipfile_content(self, path: Path) -> str:
+        return path.read_text(encoding="utf-8")
+
     def package(self) -> None:
         with zipfile.ZipFile(self.zipfile, mode="w") as zip_file:
-            for file in self.module_root_path.glob("**/*.py"):
-                content = file.read_text()
-                content = content.encode("utf-8")
-                rel_path = file.relative_to(self.module_root_path).as_posix()
-                zip_file.writestr(rel_path, content)
+            for file in self.module_files():
+                content = self.zipfile_content(file)
+                relative_path = self.zipfile_relative_path(file)
+                zip_file.writestr(relative_path, content)
 
     def remove_zipfile(self) -> None:
         if self.zipfile.exists():

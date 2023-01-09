@@ -106,9 +106,45 @@ def test_module_delete_not_implemented(module: SuperglueModule) -> None:
         module.delete()
 
 
-def test_module_package_method() -> None:
-    #TODO: This method is a bit ugly to test, perhaps needs refactor
-    pass
+def test_module_zipfile_relative_path_method(module: SuperglueModule) -> None:
+    path = MagicMock()
+    relative_to = MagicMock()
+    path.relative_to.return_value = relative_to
+
+    _ = module.zipfile_relative_path(path)
+    path.relative_to.assert_called_once_with(module.module_root_path)
+    relative_to.as_posix.assert_called_once()
+
+
+def test_module_zipfile_content_method(module: SuperglueModule) -> None:
+    path = MagicMock()
+    _ = module.zipfile_content(path)
+    path.read_text.assert_called_once_with(encoding="utf-8")
+
+
+
+@patch.object(SuperglueModule, "module_files")
+@patch.object(SuperglueModule, "zipfile_relative_path")
+@patch.object(SuperglueModule, "zipfile_content")
+@patch("superglue.core.components.module.zipfile.ZipFile")
+def test_module_package_method(zipfile: MagicMock, zipfile_content: MagicMock, zipfile_relative_path: MagicMock, module_files: MagicMock) -> None:
+    content = "This is the content"
+    path_value = "/spam/eggs"
+    zipfile_file = MagicMock()
+    module_files_files = MagicMock()
+    module_files.return_value = [module_files_files]
+
+    zipfile.return_value.__enter__.return_value = zipfile_file
+    zipfile_content.return_value = content
+    zipfile_relative_path.return_value = path_value
+
+    module = SuperglueModule("beans")
+    module.package()
+
+    zipfile_content.assert_called_once_with(module_files_files)
+    zipfile_relative_path.assert_called_once_with(module_files_files)
+
+    zipfile_file.writestr.assert_called_once_with(path_value, content)
 
 
 @patch.object(SuperglueModule, "zipfile")
