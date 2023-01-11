@@ -1,5 +1,11 @@
 <!--next-version-placeholder-->
 
+## v0.10.0 (2023-01-11)
+### Feature
+* **ci:** Release for ci changes ([`a367774`](https://github.com/JesseMaitland/superglue/commit/a367774706f962f4e656a7f2fb06a61bb7a8d4ce))
+* **formatting:** Fix ([`2c91351`](https://github.com/JesseMaitland/superglue/commit/2c913510a3f61087b0c7e6a90c1222ada8ee7d24))
+* **superglue:** Fix rendering ([`e250d9d`](https://github.com/JesseMaitland/superglue/commit/e250d9dd074c325f576672d8293ce59a678f16b4))
+
 ## v0.9.0 (2023-01-06)
 ### Feature
 * **package:** Add packaging of all modules ([`af43bd3`](https://github.com/JesseMaitland/superglue/commit/af43bd3629d60a39d79f60a8e36dc096af56ab19))
