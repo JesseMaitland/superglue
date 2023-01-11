@@ -173,7 +173,7 @@ class SuperglueJob(SuperglueComponent):
 
                 config_override.update(**override)
                 config_override["DefaultArguments"].update(**default_args)
-                self.deployment_config["job_configs"].append(config_override)
+                self.deployment_config["job_configs"].append(config_override.copy())
         else:
             self.deployment_config["job_configs"].append(self.config.copy()["job_config"])
 
