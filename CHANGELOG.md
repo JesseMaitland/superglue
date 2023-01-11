@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.11.0 (2023-01-11)
+### Feature
+* **overrides:** Fix override bug. copy vs deepcopy ([`62adf8a`](https://github.com/JesseMaitland/superglue/commit/62adf8a4e3b45bfbb0064f7cb432d957bfadfb3f))
+
 ## v0.10.0 (2023-01-11)
 ### Feature
 * **ci:** Release for ci changes ([`a367774`](https://github.com/JesseMaitland/superglue/commit/a367774706f962f4e656a7f2fb06a61bb7a8d4ce))
