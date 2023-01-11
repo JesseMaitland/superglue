@@ -7,6 +7,7 @@ from superglue.environment.config import MODULES_PATH, TESTS_PATH
 TEST_MODULE_NAME = "green_eggs_and_ham"
 TEST_ZIPFILE_NAME = f"{TEST_MODULE_NAME}.zip"
 
+
 @pytest.fixture()
 def module() -> SuperglueModule:
     return SuperglueModule(name=TEST_MODULE_NAME)
@@ -122,12 +123,13 @@ def test_module_zipfile_content_method(module: SuperglueModule) -> None:
     path.read_text.assert_called_once_with(encoding="utf-8")
 
 
-
 @patch.object(SuperglueModule, "module_files")
 @patch.object(SuperglueModule, "zipfile_relative_path")
 @patch.object(SuperglueModule, "zipfile_content")
 @patch("superglue.core.components.module.zipfile.ZipFile")
-def test_module_package_method(zipfile: MagicMock, zipfile_content: MagicMock, zipfile_relative_path: MagicMock, module_files: MagicMock) -> None:
+def test_module_package_method(
+    zipfile: MagicMock, zipfile_content: MagicMock, zipfile_relative_path: MagicMock, module_files: MagicMock
+) -> None:
     content = "This is the content"
     path_value = "/spam/eggs"
     zipfile_file = MagicMock()

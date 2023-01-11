@@ -13,6 +13,7 @@ from superglue.core.components.project import SuperglueProject
 #
 #
 
+
 def exit_if_job_exists(job_name: str) -> None:
 
     project = SuperglueProject()
@@ -21,6 +22,8 @@ def exit_if_job_exists(job_name: str) -> None:
     if job.job_path.exists():
         print(f"The job {job.job_name} already exists")
         exit(1)
+
+
 #
 #
 # def check_module_exists(module_name: str) -> None:
