@@ -4,14 +4,16 @@ import boto3
 import botocore
 from io import StringIO
 from pathlib import Path
-from typing import Dict, List, Optional, TypeVar
+from typing import Dict, List, Optional, TypeVar, Any
 from superglue.core.components.module import SuperglueModule
 from superglue.core.components.base import SuperglueComponent
 from superglue.environment.config import JOBS_PATH, MODULES_PATH
 from superglue.core.components.component_list import SuperglueComponentList
 from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE
 from superglue.core.components.tests import SuperglueTests
+from copy import deepcopy
 
+from pprint import pp
 
 SuperglueJobType = TypeVar("SuperglueJobType", bound="SuperglueJob")
 
@@ -152,7 +154,7 @@ class SuperglueJob(SuperglueComponent):
     def render(self) -> None:
         extra_file_args = self.get_extra_file_args()
         modules = self.modules()
-        config = self.config.copy()
+        config = deepcopy(self.config)
 
         s3_module_paths = ",".join([module.s3_zipfile_path for module in modules])
 
@@ -168,14 +170,20 @@ class SuperglueJob(SuperglueComponent):
 
         if self.overrides:
             for override in self.overrides:
-                config_override = config.copy()["job_config"]
-                default_args = config_override["DefaultArguments"].copy()
-
-                config_override.update(**override)
-                config_override["DefaultArguments"].update(**default_args)
-                self.deployment_config["job_configs"].append(config_override.copy())
+                base_config = deepcopy(config["job_config"])
+                overriden_config = self.apply_overrides(base_config, override)
+                self.deployment_config["job_configs"].append(overriden_config)
         else:
             self.deployment_config["job_configs"].append(self.config.copy()["job_config"])
+
+    def apply_overrides(self, base_config: Dict[str, Any], overrides: Dict[str, Any]) -> Dict[str, Any]:
+
+        for key in overrides.keys():
+            if isinstance(overrides[key], Dict):
+                base_config[key] = self.apply_overrides(base_config[key], overrides[key])
+            else:
+                base_config[key] = overrides[key]
+        return base_config
 
     def create_or_update(self) -> None:
         glue_client = boto3.client("glue")
