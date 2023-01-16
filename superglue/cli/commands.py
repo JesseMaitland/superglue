@@ -227,7 +227,7 @@ class Refresh(BaseSuperglueCommand):
                 Messages.updating_local_version(component, remote_version)
                 component.save_version_file(version_number=remote_version)
             else:
-                Messages.versions_in_sync()
+                Messages.versions_in_sync(component, remote_version)
 
 
 class Generate(BaseSuperglueCommand):
