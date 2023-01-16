@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.13.0 (2023-01-16)
+### Feature
+* **superglue:** Add refresh command ([`0ff6a8b`](https://github.com/JesseMaitland/superglue/commit/0ff6a8b5e804ec522ca0f249ed0ae4688c339c29))
+
 ## v0.12.0 (2023-01-16)
 ### Feature
 * **superglue:** Change config naming convention ([`3261c69`](https://github.com/JesseMaitland/superglue/commit/3261c69bcaeab4dce7e6a3d6ce696ac94c08a481))
