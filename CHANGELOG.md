@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.12.0 (2023-01-16)
+### Feature
+* **superglue:** Change config naming convention ([`3261c69`](https://github.com/JesseMaitland/superglue/commit/3261c69bcaeab4dce7e6a3d6ce696ac94c08a481))
+
 ## v0.11.0 (2023-01-11)
 ### Feature
 * **overrides:** Fix override bug. copy vs deepcopy ([`62adf8a`](https://github.com/JesseMaitland/superglue/commit/62adf8a4e3b45bfbb0064f7cb432d957bfadfb3f))

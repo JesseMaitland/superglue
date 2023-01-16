@@ -1,6 +1,6 @@
 # Superglue
 ## A CLI tool for developing, testing and deploying AWS glue jobs
-### VERSION 0.11.0
+### VERSION 0.12.0
 
 Superglue makes the development, troubleshooting and deployment of AWS glue jobs simple. It also makes creating a shared 
 glue codebase easy and testable
