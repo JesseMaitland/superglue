@@ -18,6 +18,7 @@ Superglue is intended to be used for a "project" or "collection" of AWS glue job
 superglue init
 ```
 
+
 ### Project Structure
 ```
 jobs        -- all of your glue jobs live here
