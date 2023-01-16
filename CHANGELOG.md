@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.14.0 (2023-01-16)
+### Feature
+* **superglue:** Add refresh command ([`4bb7595`](https://github.com/JesseMaitland/superglue/commit/4bb7595166d38199b7c59e414a5c9d35196497fe))
+
 ## v0.13.0 (2023-01-16)
 ### Feature
 * **superglue:** Add refresh command ([`0ff6a8b`](https://github.com/JesseMaitland/superglue/commit/0ff6a8b5e804ec522ca0f249ed0ae4688c339c29))
