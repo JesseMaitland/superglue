@@ -45,11 +45,11 @@ class Messages:
 
     @staticmethod
     def locking_job(job: SuperglueJobType) -> None:
-        print(f"Locking Job -----> {job.name} :: Version {job.next_version_number}")
+        print(f"Locking Job -----> {job.name} :: Version {job.version_number}")
 
     @staticmethod
     def locking_module(module: SuperglueModuleType) -> None:
-        print(f"Locking module -----> {module.name} :: Version {module.next_version_number}")
+        print(f"Locking module -----> {module.name} :: Version {module.version_number}")
 
     @staticmethod
     def no_deployment() -> None:

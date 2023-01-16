@@ -13,8 +13,6 @@ from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_R
 from superglue.core.components.tests import SuperglueTests
 from copy import deepcopy
 
-from pprint import pp
-
 SuperglueJobType = TypeVar("SuperglueJobType", bound="SuperglueJob")
 
 
@@ -79,15 +77,15 @@ class SuperglueJob(SuperglueComponent):
 
     @property
     def config_file(self) -> Path:
-        return self.job_path / "config.yml"
+        return self.job_path / "config_base.yml"
 
     @property
     def overrides_file(self) -> Path:
-        return self.job_path / "overrides.yml"
+        return self.job_path / "config_overrides.yml"
 
     @property
     def deployment_config_file(self) -> Path:
-        return self.job_path / "deployment.yml"
+        return self.job_path / "config_merged.yml"
 
     @property
     def superglue_modules(self) -> Dict[str, str]:
@@ -234,6 +232,7 @@ class SuperglueJob(SuperglueComponent):
         return extra_file_args
 
     def deploy(self) -> None:
+        self.append_version()
         self.generate_deployment_yml()
         self.sync()
         self.create_or_update()

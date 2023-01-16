@@ -1,3 +1,4 @@
+import re
 import boto3
 import json
 import botocore
@@ -7,7 +8,7 @@ from hashlib import md5
 from abc import ABC, abstractmethod
 from multiprocessing import Pool, cpu_count
 from jinja2 import Environment, PackageLoader
-from typing import Optional, Dict, Tuple, List, TypeVar
+from typing import Optional, Dict, Tuple, List, TypeVar, Generator
 from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET
 
 
@@ -49,6 +50,9 @@ SuperglueComponentType = TypeVar("SuperglueComponentType", bound="SuperglueCompo
 
 
 class SuperglueComponent(BaseSuperglueComponent, ABC):
+
+    version_pattern = r".*(version=[0-9]+).*"
+
     def __init__(
         self, bucket: Optional[str] = SUPERGLUE_S3_BUCKET, iam_role: Optional[str] = SUPERGLUE_IAM_ROLE, *args, **kwargs
     ) -> None:
@@ -84,6 +88,10 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
     @property
     def s3_prefix(self) -> str:
         return f"superglue/{self.component_type}/{self.component_name}/version={self.version_number}"
+
+    @property
+    def s3_filter(self) -> str:
+        return f"superglue/{self.component_type}/{self.component_name}"
 
     @property
     def s3_version_path(self) -> str:
@@ -160,7 +168,7 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
         version_hashes = {}
         filters = [
             ".version",
-            "deployment.yml",
+            "config_merged.yml",
         ]
 
         for path in self.component_files():
@@ -169,9 +177,13 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
                 version_hashes[key] = digest
         return version_hashes
 
-    def save_version_file(self) -> None:
+    def save_version_file(self, version_number: Optional[int] = None) -> None:
         version_hashes = self.get_version_hashes()
-        version_hashes["version_number"] = self.version_number
+
+        if not version_number:
+            version_hashes["version_number"] = self.version_number
+        else:
+            version_hashes["version_number"] = version_number
         json.dump(version_hashes, self.version_file.open(mode="w"), indent=4)
 
     def upload_object_to_s3(self, path: Path) -> None:
@@ -199,8 +211,45 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
             raise e
 
     def lock(self) -> None:
+        self.save_version_file()
+
+    def append_version(self) -> None:
         self.increment_version()
         self.save_version_file()
+
+    @staticmethod
+    def compare_previous(previous: int, current: int) -> int:
+        return max(previous, current)
+
+    def parse_version_numbers(self, keys):
+        for key in keys:
+            yield int(re.match(self.version_pattern, key).group(1).partition("=")[2])
+
+    def list_superglue_components(self) -> Generator[List[str], None, None]:
+        s3_client = boto3.client("s3")
+        continue_token = "start"
+        while continue_token:
+
+            kwargs = {"Bucket": self.bucket, "Prefix": self.s3_filter}
+
+            if continue_token and continue_token != "start":
+                kwargs["ContinuationToken"] = continue_token
+
+            results = s3_client.list_objects_v2(**kwargs)
+
+            try:
+                yield [key["Key"] for key in results["Contents"] if key["Key"]]
+            except KeyError:
+                yield []
+
+            continue_token = results.get("ContinuationToken")
+
+    def fetch_s3_version_number(self) -> int:
+        v = 0
+        for keys in self.list_superglue_components():
+            for version in self.parse_version_numbers(keys):
+                v = self.compare_previous(v, version)
+        return int(v)
 
     @abstractmethod
     def deploy(self) -> None:

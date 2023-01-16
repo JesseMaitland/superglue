@@ -211,6 +211,26 @@ class Deploy(BaseSuperglueCommand):
             Messages.job_deploy(job)
 
 
+class Refresh(BaseSuperglueCommand):
+
+    help = "--> Refresh all local version numbers with the latest versions stored in S3."
+
+    def __call__(self) -> None:
+
+        for job in self.project.jobs:
+            remote_version = job.fetch_s3_version_number()
+            if int(remote_version) != int(job.version_number):
+                print(f"the remote version is {remote_version}")
+                print(f"updating local version for job {job.name}")
+                job.save_version_file(version_number=remote_version)
+
+        for module in self.project.modules:
+            remote_version = module.fetch_s3_version_number()
+            if int(remote_version) != int(module.version_number):
+                print(f"updating local version for module {module.name}")
+                module.save_version_file(version_number=remote_version)
+
+
 class Generate(BaseSuperglueCommand):
 
     help = "--> Used to generate superglue tests, and utility files"

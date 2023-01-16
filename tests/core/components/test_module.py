@@ -95,8 +95,9 @@ def test_module_save_method(module_inner_path, save_version_file, save_tests) ->
     save_tests.assert_called_once()
 
 
+@patch.object(SuperglueModule, "append_version")
 @patch.object(SuperglueModule, "sync")
-def test_module_deploy_method(sync: MagicMock) -> None:
+def test_module_deploy_method(sync: MagicMock, _) -> None:
     module = SuperglueModule("foo")
     module.deploy()
     sync.assert_called_once()
