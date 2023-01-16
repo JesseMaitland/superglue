@@ -2,7 +2,7 @@ from superglue.cli.utils import validate_account
 from superglue.cli.base import BaseSuperglueCommand
 from superglue.cli.messages import Messages
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 
 
 class Version(BaseSuperglueCommand):
