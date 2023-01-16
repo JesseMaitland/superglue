@@ -53,6 +53,10 @@ class SuperglueProject:
         return SuperglueComponentList(modules)
 
     @property
+    def components(self) -> SuperglueComponentList:
+        return SuperglueComponentList(self.jobs + self.modules)
+
+    @property
     def makefile(self) -> Type[SuperglueMakefile]:
         return SuperglueMakefile
 
@@ -66,10 +70,13 @@ class SuperglueProject:
 
     @property
     def pretty_table_fields(self) -> List[str]:
-        return ["Component Name", "Component Type", "Local Stats", "s3 Status", "Version Number"]
+        return ["Component Name", "Component Type", "Local Stats", "s3 Status", "Version Status", "Version Number"]
 
     def is_locked(self) -> bool:
         return self.jobs.are_locked() and self.modules.are_locked()
+
+    def versions_match(self) -> bool:
+        return self.components.versions_match()
 
     def save_project_component(self, component_name: str) -> None:
         component_property = getattr(self, component_name)

@@ -70,6 +70,10 @@ class Check(BaseSuperglueCommand):
             Messages.not_packaged()
             exit(1)
 
+        if not self.project.versions_match():
+            Messages.version_missmatch()
+            exit(1)
+
         else:
             Messages.yes_deployment()
 
@@ -217,18 +221,13 @@ class Refresh(BaseSuperglueCommand):
 
     def __call__(self) -> None:
 
-        for job in self.project.jobs:
-            remote_version = job.fetch_s3_version_number()
-            if int(remote_version) != int(job.version_number):
-                print(f"the remote version is {remote_version}")
-                print(f"updating local version for job {job.name}")
-                job.save_version_file(version_number=remote_version)
-
-        for module in self.project.modules:
-            remote_version = module.fetch_s3_version_number()
-            if int(remote_version) != int(module.version_number):
-                print(f"updating local version for module {module.name}")
-                module.save_version_file(version_number=remote_version)
+        for component in self.project.components:
+            remote_version = component.fetch_s3_version_number()
+            if int(remote_version) != int(component.version_number):
+                Messages.updating_local_version(component, remote_version)
+                component.save_version_file(version_number=remote_version)
+            else:
+                Messages.versions_in_sync()
 
 
 class Generate(BaseSuperglueCommand):

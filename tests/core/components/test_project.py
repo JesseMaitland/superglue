@@ -11,7 +11,14 @@ from superglue.core.components.tests import SuperglueTests
 from superglue.core.components.files import SuperglueFiles
 
 
-EXPECTED_PRETTY_TABLE_FIELDS = ["Component Name", "Component Type", "Local Stats", "s3 Status", "Version Number"]
+EXPECTED_PRETTY_TABLE_FIELDS = [
+    "Component Name",
+    "Component Type",
+    "Local Stats",
+    "s3 Status",
+    "Version Status",
+    "Version Number",
+]
 
 
 @pytest.fixture(scope="module")

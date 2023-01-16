@@ -56,6 +56,20 @@ class Messages:
         print("Unlocked modules or jobs exist. Deployment is not possible.")
 
     @staticmethod
+    def updating_local_version(component: SuperglueComponentType, version: int):
+        print(f"Updating local version for {component.component_type} {component.name} to version {version}")
+
+    @staticmethod
+    def versions_in_sync(component: SuperglueComponentType, version: int):
+        print(
+            f"Remote version {version} for {component.component_type} {component.name} is in sync with local version."
+        )
+
+    @staticmethod
+    def version_missmatch() -> None:
+        print("Versions between local and S3 don't match. Run superglue refresh to fix this problem.")
+
+    @staticmethod
     def yes_deployment() -> None:
         print("All superglue jobs and modules are up to date. Deployment is possible.")
 

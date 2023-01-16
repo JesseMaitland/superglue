@@ -113,16 +113,24 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
         return self.is_locked and local_version != s3_version
 
     @property
-    def status(self) -> Tuple[str, str]:
+    def status(self) -> Tuple[str, str, str]:
 
-        if self.is_unlocked:
-            return "unlocked", "out of sync"
-
-        elif self.is_deployable:
-            return "locked", "out of sync"
-
+        if self.version_in_sync:
+            remote_version_message = "in sync"
         else:
-            return "locked", "in sync"
+            remote_version_message = "refresh required"
+
+        if self.is_locked:
+            locked_message = "locked"
+        else:
+            locked_message = "unlocked"
+
+        if self.is_deployable:
+            deployable_message = "out of sync"
+        else:
+            deployable_message = "in sync"
+
+        return locked_message, deployable_message, remote_version_message
 
     @property
     def pretty_table_row(self) -> List[str]:
@@ -131,6 +139,11 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
     @property
     def next_version_number(self) -> int:
         return self.version_number + 1
+
+    @property
+    def version_in_sync(self) -> bool:
+        remote_version = self.fetch_s3_version_number()
+        return remote_version == self.version_number
 
     def increment_version(self) -> None:
         self.version_number += 1

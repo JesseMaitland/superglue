@@ -14,14 +14,18 @@ class SuperglueComponentList(list):
 
     def are_locked(self) -> bool:
         locked_status = [c.is_locked for c in self]
-        return not False in locked_status
+        return False not in locked_status
 
     def are_unlocked(self) -> bool:
         return not self.are_locked()
 
     def are_packaged(self) -> bool:
         packaged_status = [c.is_packaged for c in self]
-        return not False in packaged_status
+        return False not in packaged_status
 
     def are_not_packaged(self) -> bool:
         return not self.are_packaged()
+
+    def versions_match(self) -> bool:
+        version_status = [c.version_in_sync for c in self]
+        return False not in version_status
