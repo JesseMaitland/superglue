@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.16.0 (2023-01-17)
+### Feature
+* **superglue:** Add version option flags to CLI fix ([`3befc43`](https://github.com/JesseMaitland/superglue/commit/3befc43df1ca14db189fa302565ee53e29cc4970))
+
 ## v0.15.0 (2023-01-17)
 ### Feature
 * **superglue:** Add version option flags to CLI ([`c76a339`](https://github.com/JesseMaitland/superglue/commit/c76a339a4f71f7e311c7526f727d204e01254849))
