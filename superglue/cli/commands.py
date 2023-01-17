@@ -60,7 +60,7 @@ class Check(BaseSuperglueCommand):
     help = "--> Used to check the status of the superglue project before a deployment"
 
     args = {
-        ["--ignore-version"]: {
+        ("--ignore-version",): {
             "action": "store_true",
             "default": False,
             "help": "Set this flag to ignore the version check",
@@ -181,7 +181,7 @@ class Deploy(BaseSuperglueCommand):
             "default": False,
             "help": "Print a dry run to the terminal of what superglue would deploy",
         },
-        ["--increment-version"]: {
+        ("--increment-version",): {
             "action": "store_true",
             "default": False,
             "help": "Set this flag to increment the version number upon deployment.",
