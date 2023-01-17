@@ -78,10 +78,9 @@ class Check(BaseSuperglueCommand):
             Messages.not_packaged()
             exit(1)
 
-        if not self.cli_args.ignore_version:
-            if not self.project.versions_match():
-                Messages.version_missmatch()
-                exit(1)
+        if not self.project.versions_match() and not self.cli_args.ignore_version:
+            Messages.version_missmatch()
+            exit(1)
 
         else:
             Messages.yes_deployment()
