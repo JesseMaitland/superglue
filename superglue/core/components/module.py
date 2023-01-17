@@ -92,8 +92,9 @@ class SuperglueModule(SuperglueComponent):
         self.save_version_file()
         self.save_tests()
 
-    def deploy(self) -> None:
-        self.append_version()
+    def deploy(self, increment_version: bool) -> None:
+        if increment_version:
+            self.append_version()
         self.sync()
 
     def delete(self) -> None:

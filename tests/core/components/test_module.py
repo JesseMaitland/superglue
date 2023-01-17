@@ -99,7 +99,7 @@ def test_module_save_method(module_inner_path, save_version_file, save_tests) ->
 @patch.object(SuperglueModule, "sync")
 def test_module_deploy_method(sync: MagicMock, _) -> None:
     module = SuperglueModule("foo")
-    module.deploy()
+    module.deploy(False)
     sync.assert_called_once()
 
 

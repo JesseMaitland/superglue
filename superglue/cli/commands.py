@@ -59,6 +59,14 @@ class Check(BaseSuperglueCommand):
 
     help = "--> Used to check the status of the superglue project before a deployment"
 
+    args = {
+        ["--ignore-version"]: {
+            "action": "store_true",
+            "default": False,
+            "help": "Set this flag to ignore the version check",
+        }
+    }
+
     @validate_account
     def __call__(self) -> None:
 
@@ -70,9 +78,10 @@ class Check(BaseSuperglueCommand):
             Messages.not_packaged()
             exit(1)
 
-        if not self.project.versions_match():
-            Messages.version_missmatch()
-            exit(1)
+        if not self.cli_args.ignore_version:
+            if not self.project.versions_match():
+                Messages.version_missmatch()
+                exit(1)
 
         else:
             Messages.yes_deployment()
@@ -171,7 +180,12 @@ class Deploy(BaseSuperglueCommand):
             "action": "store_true",
             "default": False,
             "help": "Print a dry run to the terminal of what superglue would deploy",
-        }
+        },
+        ["--increment-version"]: {
+            "action": "store_true",
+            "default": False,
+            "help": "Set this flag to increment the version number upon deployment.",
+        },
     }
 
     @validate_account
@@ -206,12 +220,12 @@ class Deploy(BaseSuperglueCommand):
 
     def module_deploy(self) -> None:
         for module in self.project.modules.deployable():
-            module.deploy()
+            module.deploy(self.cli_args.increment_version)
             Messages.module_deploy(module)
 
     def job_deploy(self) -> None:
         for job in self.project.jobs.deployable():
-            job.deploy()
+            job.deploy(self.cli_args.increment_version)
             Messages.job_deploy(job)
 
 

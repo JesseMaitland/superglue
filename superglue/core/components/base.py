@@ -265,7 +265,7 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
         return int(v)
 
     @abstractmethod
-    def deploy(self) -> None:
+    def deploy(self, increment_version: bool) -> None:
         pass
 
     @abstractmethod

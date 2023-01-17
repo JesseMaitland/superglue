@@ -231,8 +231,9 @@ class SuperglueJob(SuperglueComponent):
 
         return extra_file_args
 
-    def deploy(self) -> None:
-        self.append_version()
+    def deploy(self, increment_version: bool) -> None:
+        if increment_version:
+            self.append_version()
         self.generate_deployment_yml()
         self.sync()
         self.create_or_update()
