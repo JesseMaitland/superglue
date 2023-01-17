@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.15.0 (2023-01-17)
+### Feature
+* **superglue:** Add version option flags to CLI ([`c76a339`](https://github.com/JesseMaitland/superglue/commit/c76a339a4f71f7e311c7526f727d204e01254849))
+
 ## v0.14.0 (2023-01-16)
 ### Feature
 * **superglue:** Add refresh command ([`4bb7595`](https://github.com/JesseMaitland/superglue/commit/4bb7595166d38199b7c59e414a5c9d35196497fe))
