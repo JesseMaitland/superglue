@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.18.0 (2023-01-25)
+### Feature
+* **superglue:** Bump python version to 3.10 ([`6a59583`](https://github.com/JesseMaitland/superglue/commit/6a595839a2b5e1b559e3ff6181f9b32ea29308a9))
+
 ## v0.17.0 (2023-01-17)
 ### Feature
 * **superglue:** Add version option flags to CLI add ignore ([`59c8712`](https://github.com/JesseMaitland/superglue/commit/59c87123e22325d710ad7012a48dffdc25032c77))
