@@ -172,7 +172,7 @@ class SuperglueJob(SuperglueComponent):
                 overriden_config = self.apply_overrides(base_config, override)
                 self.deployment_config["job_configs"].append(overriden_config)
         else:
-            self.deployment_config["job_configs"].append(self.config.copy()["job_config"])
+            self.deployment_config["job_configs"].append(config["job_config"])
 
     def apply_overrides(self, base_config: Dict[str, Any], overrides: Dict[str, Any]) -> Dict[str, Any]:
 

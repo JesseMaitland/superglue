@@ -1,6 +1,8 @@
 from superglue.cli.utils import validate_account
 from superglue.cli.base import BaseSuperglueCommand
 from superglue.cli.messages import Messages
+from superglue.cli.validation import ValidateNameArgument
+
 
 __version__ = "0.18.0"
 
@@ -37,7 +39,7 @@ class New(BaseSuperglueCommand):
 
     args = {
         ("component_type",): {"choices": ["job", "module"], "help": "Can be either job or module"},
-        ("-n", "--name"): {"required": True, "help": "The name of the new component to create"},
+        ("-n", "--name"): {"required": True, "help": "The name of the new component to create", "action": ValidateNameArgument},
     }
 
     def __call__(self) -> None:

@@ -1,17 +1,14 @@
 from argparse import ArgumentParser, Action, Namespace
-from typing import Any
+from typing import Any, List
 from superglue.core.components.project import SuperglueProject
 
-#
-#
-# def validate_input_string(input_string: str, message: str) -> None:
-#     forbidden = "!" "#$%&'()*+,./:;<=>?@[\\]^`{|}~"
-#     for char in input_string:
-#         if char in forbidden:
-#             print(message)
-#             exit()
-#
-#
+def get_forbidden_chars(input_string: str) -> List[str]:
+    forbidden = "!" "#$%&'()*+,./:;<=>?@[\\]^`{|}~-"
+    captured = []
+    for char in input_string:
+        if char in forbidden:
+            captured.append(char)
+    return captured
 
 
 def exit_if_job_exists(job_name: str) -> None:
@@ -36,15 +33,15 @@ def exit_if_job_exists(job_name: str) -> None:
 #         exit()
 #
 #
-# class ValidateJobCommandName(Action):
-#     def __call__(self, parser: ArgumentParser, namespace: Namespace, values: Any, option_string: str = None):
-#         validate_input_string(values, f"The {values} is not allowed in job names")
-#
-#         # The job of course cannot already exist if we ar calling the new cmd
-#         if not namespace.func.__name__ == "new":
-#             check_job_exists(values)
-#
-#         setattr(namespace, self.dest, values)
+class ValidateNameArgument(Action):
+    def __call__(self, parser: ArgumentParser, namespace: Namespace, values: Any, option_string: str = None):
+        forbidden_chars = get_forbidden_chars(values)
+
+        if forbidden_chars:
+            print(f"The {forbidden_chars} characters are not allowed in superglue component names")
+            exit(1)
+
+        setattr(namespace, self.dest, values)
 #
 #
 # class ValidateModuleCommandName(Action):
