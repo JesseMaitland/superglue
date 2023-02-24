@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Action, Namespace
 from typing import Any, List
 from superglue.core.components.project import SuperglueProject
 
+
 def get_forbidden_chars(input_string: str) -> List[str]:
     forbidden = "!" "#$%&'()*+,./:;<=>?@[\\]^`{|}~-"
     captured = []
@@ -42,6 +43,8 @@ class ValidateNameArgument(Action):
             exit(1)
 
         setattr(namespace, self.dest, values)
+
+
 #
 #
 # class ValidateModuleCommandName(Action):

@@ -39,7 +39,11 @@ class New(BaseSuperglueCommand):
 
     args = {
         ("component_type",): {"choices": ["job", "module"], "help": "Can be either job or module"},
-        ("-n", "--name"): {"required": True, "help": "The name of the new component to create", "action": ValidateNameArgument},
+        ("-n", "--name"): {
+            "required": True,
+            "help": "The name of the new component to create",
+            "action": ValidateNameArgument,
+        },
     }
 
     def __call__(self) -> None:

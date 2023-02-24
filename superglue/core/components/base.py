@@ -14,7 +14,7 @@ from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUC
 
 BaseSuperglueComponentType = TypeVar(name="BaseSuperglueComponentType", bound="BaseSuperglueComponent")
 
- 
+
 class BaseSuperglueComponent(ABC):
     def __init__(self, root_dir: Path, component_name: str, component_type: str) -> None:
 
