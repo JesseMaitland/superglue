@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.18.1 (2023-02-24)
+### Fix
+* **job:** Fix a bug that would not deploy additional python files when not using the overrides file ([`3234ef4`](https://github.com/JesseMaitland/superglue/commit/3234ef4323fc55bee2fa54f91cc9e63623227ba2))
+
 ## v0.18.0 (2023-01-25)
 ### Feature
 * **superglue:** Bump python version to 3.10 ([`6a59583`](https://github.com/JesseMaitland/superglue/commit/6a595839a2b5e1b559e3ff6181f9b32ea29308a9))

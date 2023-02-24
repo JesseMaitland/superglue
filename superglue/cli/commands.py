@@ -4,7 +4,7 @@ from superglue.cli.messages import Messages
 from superglue.cli.validation import ValidateNameArgument
 
 
-__version__ = "0.18.0"
+__version__ = "0.18.1"
 
 
 class Version(BaseSuperglueCommand):
