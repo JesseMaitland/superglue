@@ -48,20 +48,12 @@ class SuperglueJob(SuperglueComponent):
         return self.root_dir / self.name
 
     @property
-    def check_path(self) -> Path:
-        return self.job_path / "check"
-
-    @property
     def pys_path(self) -> Path:
         return self.job_path / "py"
 
     @property
     def jars_path(self) -> Path:
         return self.job_path / "jars"
-
-    @property
-    def shared_path(self) -> Path:
-        return MODULES_PATH
 
     @property
     def job_test_path(self) -> Path:
