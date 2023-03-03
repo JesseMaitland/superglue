@@ -1,5 +1,10 @@
 <!--next-version-placeholder-->
 
+## v0.18.2 (2023-03-03)
+### Fix
+* **formatting:** Fix black errors ([`2791217`](https://github.com/JesseMaitland/superglue/commit/2791217ce6c7d0c3776a413981a46333b1defc3a))
+* **license:** Add apache 2.0 license and tests for job ([`c8440fb`](https://github.com/JesseMaitland/superglue/commit/c8440fb0efd532b319aa50cea5b6abd3d14b24a3))
+
 ## v0.18.1 (2023-02-24)
 ### Fix
 * **job:** Fix a bug that would not deploy additional python files when not using the overrides file ([`3234ef4`](https://github.com/JesseMaitland/superglue/commit/3234ef4323fc55bee2fa54f91cc9e63623227ba2))
