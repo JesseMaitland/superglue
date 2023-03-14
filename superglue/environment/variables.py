@@ -17,11 +17,12 @@ else:
 
 SUPERGLUE_S3_BUCKET = os.getenv("SUPERGLUE_S3_BUCKET")
 SUPERGLUE_IAM_ROLE = os.getenv("SUPERGLUE_IAM_ROLE")
+AWS_REGION = os.getenv("AWS_REGION")
 
 # For simple account validation
 try:
     SUPERGLUE_AWS_ACCOUNT = int(os.getenv("SUPERGLUE_AWS_ACCOUNT"))
-except TypeError:
+except ValueError:
     SUPERGLUE_AWS_ACCOUNT = None
 
 # keep this as we may want logging
