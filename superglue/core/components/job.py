@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, TypeVar, Any
 from superglue.core.components.module import SuperglueModule
 from superglue.core.components.base import SuperglueComponent
-from superglue.environment.config import JOBS_PATH, MODULES_PATH
+from superglue.environment.config import JOBS_PATH
 from superglue.core.components.component_list import SuperglueComponentList
-from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE
+from superglue.environment.variables import SUPERGLUE_S3_BUCKET, SUPERGLUE_IAM_ROLE, AWS_REGION, SUPERGLUE_AWS_ACCOUNT
 from superglue.core.components.tests import SuperglueTests
 from copy import deepcopy
 
@@ -42,6 +42,10 @@ class SuperglueJob(SuperglueComponent):
             self.config = {}
 
         self.deployment_config = {"job_configs": []}
+
+    @property
+    def job_arn(self) -> str:
+        return f"arn:aws:glue:{AWS_REGION}:{SUPERGLUE_AWS_ACCOUNT}:job/{self.name}"
 
     @property
     def job_path(self) -> Path:
@@ -190,18 +194,41 @@ class SuperglueJob(SuperglueComponent):
 
             if job_exists:  # then update the job definition
                 print(f"the job {config['Name']} exists. It will be updated")
+                remote_tags = glue_client.get_tags(ResourceArn=self.job_arn)
+
                 # create and update glue api have different parameters for job name, so pop the name param
                 # out of our config and pass it to the 'JobName' parameter of the update api.
                 params = config.copy()
                 job_name = params.pop("Name")
 
+                # get rid of the tags parameter as it is not supported in the job update API
+                try:
+                    local_tags = params.pop("Tags")
+                except KeyError:
+                    local_tags = {}
+
                 # request a job update, if it fails a client exception is raised.
                 _ = glue_client.update_job(JobName=job_name, JobUpdate=params)
+
+                # remove all tags from the job
+                _ = glue_client.untag_resource(ResourceArn=self.job_arn, TagsToRemove=list(remote_tags["Tags"].keys()))
+
+                # re-tag resource with local settings
+                if local_tags:
+                    _ = glue_client.tag_resource(ResourceArn=self.job_arn, TagsToAdd=local_tags)
 
             else:
                 # otherwise create the job for the first time
                 # if it fails a client exception is raised.
                 _ = glue_client.create_job(**config)
+
+    def update_tags(self) -> None:
+        client
+        for config in self.deployment_config["job_configs"]:
+            tags = deepcopy(config).get("Tags")
+
+            if not tags:
+                return
 
     def modules(self) -> SuperglueComponentList:
         component_list = SuperglueComponentList()
