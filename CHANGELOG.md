@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.19.0 (2023-03-14)
+### Feature
+* **tagging:** Add support for adding tags to glue jobs ([`92626b5`](https://github.com/JesseMaitland/superglue/commit/92626b51288ba4359cd740315be359f3694bbe6d))
+
 ## v0.18.2 (2023-03-03)
 ### Fix
 * **formatting:** Fix black errors ([`2791217`](https://github.com/JesseMaitland/superglue/commit/2791217ce6c7d0c3776a413981a46333b1defc3a))
