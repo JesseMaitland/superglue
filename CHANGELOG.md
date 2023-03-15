@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.19.1 (2023-03-15)
+### Fix
+* **tagging:** Fixed a bug where the job override name was not being used in ([`e54fe22`](https://github.com/JesseMaitland/superglue/commit/e54fe2296a1414992877a6238f90127dd49d6082))
+
 ## v0.19.0 (2023-03-14)
 ### Feature
 * **tagging:** Add support for adding tags to glue jobs ([`92626b5`](https://github.com/JesseMaitland/superglue/commit/92626b51288ba4359cd740315be359f3694bbe6d))
