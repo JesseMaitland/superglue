@@ -227,7 +227,6 @@ class SuperglueJob(SuperglueComponent):
                 _ = glue_client.create_job(**config)
 
     def update_tags(self) -> None:
-        client
         for config in self.deployment_config["job_configs"]:
             tags = deepcopy(config).get("Tags")
 

@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from multiprocessing import Pool, cpu_count
 from jinja2 import Environment, PackageLoader
 from typing import Optional, Dict, Tuple, List, TypeVar, Generator
-from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET
+from superglue.environment.variables import SUPERGLUE_IAM_ROLE, SUPERGLUE_S3_BUCKET, SUPERGLUE_S3_PREFIX
 
 
 BaseSuperglueComponentType = TypeVar(name="BaseSuperglueComponentType", bound="BaseSuperglueComponent")
@@ -82,16 +82,22 @@ class SuperglueComponent(BaseSuperglueComponent, ABC):
         return self.component_path / ".version"
 
     @property
+    def s3_prefix_root(self) -> str:
+        if SUPERGLUE_S3_PREFIX:
+            return f"{SUPERGLUE_S3_PREFIX}/superglue"
+        return f"superglue"
+
+    @property
     def s3_path(self) -> str:
-        return f"s3://{self.bucket}/superglue/{self.component_type}/{self.component_name}/version={self.version_number}/{self.component_name}"
+        return f"s3://{self.bucket}/{self.s3_prefix_root}/{self.component_type}/{self.component_name}/version={self.version_number}/{self.component_name}"
 
     @property
     def s3_prefix(self) -> str:
-        return f"superglue/{self.component_type}/{self.component_name}/version={self.version_number}"
+        return f"{self.s3_prefix_root}/{self.component_type}/{self.component_name}/version={self.version_number}"
 
     @property
     def s3_filter(self) -> str:
-        return f"superglue/{self.component_type}/{self.component_name}"
+        return f"{self.s3_prefix_root}/{self.component_type}/{self.component_name}"
 
     @property
     def s3_version_path(self) -> str:
