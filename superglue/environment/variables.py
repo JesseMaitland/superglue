@@ -17,6 +17,7 @@ else:
 
 SUPERGLUE_S3_BUCKET = os.getenv("SUPERGLUE_S3_BUCKET")
 SUPERGLUE_IAM_ROLE = os.getenv("SUPERGLUE_IAM_ROLE")
+SUPERGLUE_S3_PREFIX = os.getenv("SUPERGLUE_S3_PREFIX")
 AWS_REGION = os.getenv("AWS_REGION")
 
 # For simple account validation
