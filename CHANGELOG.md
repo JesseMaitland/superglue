@@ -1,5 +1,9 @@
 <!--next-version-placeholder-->
 
+## v0.20.0 (2023-07-25)
+### Feature
+* **environment:** Added environment variable for setting an S3 bucket prefix ([`97d6f85`](https://github.com/JesseMaitland/superglue/commit/97d6f8541d4413317952b9d4f5eb3502bd55afc1))
+
 ## v0.19.1 (2023-03-15)
 ### Fix
 * **tagging:** Fixed a bug where the job override name was not being used in ([`e54fe22`](https://github.com/JesseMaitland/superglue/commit/e54fe2296a1414992877a6238f90127dd49d6082))
